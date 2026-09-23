@@ -1,0 +1,6 @@
+﻿name,phone,email,city,product,amount,date,note,order_id,process_date,__分类__,__负责人__,__优先级__,__source__
+李娜,13900139000,lina@163.com,杭州,维修服务,680,2026-09-02,机器报错E12,ORD-20260923-0002,2026-09-23,华东区,负责人B,normal,orders-shop.csv
+赵敏,13600136000,zhaomin@qq.com,上海,标准版,3200,2026-09-05,,ORD-20260923-0004,2026-09-23,华东区,负责人B,normal,orders-shop.csv
+周涛,13200132000,zhoutao@qq.com,上海,配件,260,2026-09-08,加急,ORD-20260923-0008,2026-09-23,华东区,负责人B,normal,orders-shop.csv
+郑浩,13000130000,zhenghao@qq.com,杭州,标准版,3200,2026-09-10,,ORD-20260923-0009,2026-09-23,华东区,负责人B,normal,orders-shop.csv
+马云飞,15800158000,mayunfei@qq.com,上海,配件,1880,2026-09-12,,ORD-20260923-0011,2026-09-23,华东区,负责人B,normal,orders-web.csv
