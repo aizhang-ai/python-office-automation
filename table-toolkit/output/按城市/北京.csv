@@ -1,0 +1,3 @@
+﻿order_id,name,phone,email,city,amount,date,__source__
+B002,杨帆,13500001111,yangfan@qq.com,北京,1200,2026-09-06,门店B.csv
+A002,李娜,13900139000,lina@gmail.com,北京,980,2026-09-02,门店A.csv
