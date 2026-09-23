@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>正则表达式在线测试 · 实时高亮 / 分组 / 替换预览（免费）</title>
+<meta name="description" content="免费在线正则表达式测试工具：实时高亮匹配结果、列出分组捕获内容、替换文本预览、常用正则速查表。纯浏览器本地运行，不上传数据。">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header>
+  <a class="logo" href="./index.html">在线工具箱</a>
+  <nav>
+    <a href="./csv-cleaner.html">表格清洗</a>
+    <a href="./json-formatter.html">JSON</a>
+    <a href="./regex-tester.html">正则</a>
+    <a href="./image-compress.html">图片压缩</a>
+    <a href="../index.html">定制服务</a>
+  </nav>
+</header>
+
+<main>
+  <h1>正则表达式在线测试</h1>
+  <p class="lead">边写边看匹配结果，支持 g / i / m / s 标志，能看分组捕获和替换后的样子。<span class="pill">不上传</span></p>
+
+  <div class="card">
+    <label>正则表达式</label>
+    <div class="row">
+      <div style="flex:2 1 240px"><input type="text" id="pat" placeholder="例如：\d{4}-\d{2}-\d{2}" value="1[3-9]\d{9}"></div>
+      <div class="checks" style="margin:0">
+        <label><input type="checkbox" id="fg" checked> g 全局</label>
+        <label><input type="checkbox" id="fi"> i 忽略大小写</label>
+        <label><input type="checkbox" id="fm"> m 多行</label>
+        <label><input type="checkbox" id="fs"> s 点匹配换行</label>
+      </div>
+    </div>
+    <p class="msg" id="pmsg"></p>
+
+    <label>测试文本</label>
+    <textarea id="text">张伟 13800138000 上海
+李娜 139-0013-9000 北京
+王芳 138 0013 8001 广州
+订单 A001 日期 2026-09-01 金额 1200
+邮箱 zhangwei@qq.com 和 lina@gmail.com</textarea>
+
+    <label>替换成（可留空，只做查找；支持 $1 $2 引用分组）</label>
+    <input type="text" id="rep" placeholder="例如：手机号：$0">
+
+    <div class="row" style="margin-top:12px">
+      <div style="flex:0 0 140px"><button onclick="run()">测试</button></div>
+      <div style="flex:0 0 160px"><button class="ghost" onclick="copyRep()">复制替换结果</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">匹配结果</h2>
+    <pre id="hl">（点「测试」）</pre>
+    <p class="msg" id="stat"></p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">分组捕获</h2>
+    <pre id="groups">（点「测试」）</pre>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">替换后的文本</h2>
+    <pre id="reped">（点「测试」）</pre>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">常用正则（点一下就能用）</h2>
+    <table>
+      <tr><th style="width:200px">场景</th><th>表达式</th></tr>
+      <tr><td>手机号</td><td><code>1[3-9]\d{9}</code></td></tr>
+      <tr><td>邮箱</td><td><code>[\w.+-]+@[\w-]+\.[\w.]+</code></td></tr>
+      <tr><td>日期 2026-09-01</td><td><code>\d{4}-\d{2}-\d{2}</code></td></tr>
+      <tr><td>身份证号</td><td><code>\d{17}[\dXx]</code></td></tr>
+      <tr><td>金额（带小数）</td><td><code>\d+(\.\d{1,2})?</code></td></tr>
+      <tr><td>中文字符</td><td><code>[\u4e00-\u9fa5]+</code></td></tr>
+      <tr><td>去掉首尾空格</td><td><code>^\s+|\s+$</code>（替换成空）</td></tr>
+      <tr><td>连续空白合并</td><td><code>\s{2,}</code>（替换成一个空格）</td></tr>
+      <tr><td>提取括号内容</td><td><code>(.+?)</code>（中文括号用 <code>（(.+?)）</code>）</td></tr>
+      <tr><td>URL</td><td><code>https?://[\w./?=&amp;%-]+</code></td></tr>
+    </table>
+  </div>
+
+  <div class="cta">
+    <b>有一堆文本要按规则清洗、每天都要跑一遍？</b><br>
+    网页版一次一段。定制版可以做：批量文件按规则提取与清洗、定时跑、结果导出成表格或推送到群里。<br>
+    邮箱 <b>A18926032483@outlook.com</b> · 或
+    <a href="https://github.com/aizhang-ai/python-office-automation/issues" target="_blank" rel="noopener">GitHub 开 Issue</a>
+  </div>
+</main>
+
+<footer>本工具在你的浏览器里运行，不上传任何数据</footer>
+
+<script>
+function esc(s){ return String(s).replace(/[&<>]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;'})[c]; }); }
+
+function buildFlags(){
+  return (document.getElementById('fg').checked ? 'g' : '')
+       + (document.getElementById('fi').checked ? 'i' : '')
+       + (document.getElementById('fm').checked ? 'm' : '')
+       + (document.getElementById('fs').checked ? 's' : '');
+}
+
+function run(){
+  var src = document.getElementById('pat').value;
+  var text = document.getElementById('text').value;
+  var rep = document.getElementById('rep').value;
+  var flags = buildFlags();
+  var pm = document.getElementById('pmsg');
+  if (!src){ pm.className = 'msg err'; pm.textContent = '正则不能为空'; return; }
+  var re;
+  try { re = new RegExp(src, flags); }
+  catch (e){ pm.className = 'msg err'; pm.textContent = '正则写错了：' + e.message; return; }
+  pm.className = 'msg ok';
+  pm.textContent = '/' + src + '/' + flags;
+
+  var hasG = flags.indexOf('g') >= 0;
+  var out = '', last = 0, count = 0, groupsText = '';
+  var m;
+  if (hasG){
+    re.lastIndex = 0;
+    while ((m = re.exec(text)) !== null){
+      out += esc(text.slice(last, m.index)) + '<mark>' + esc(m[0]) + '</mark>';
+      last = m.index + m[0].length;
+      count++;
+      groupsText += '第 ' + count + ' 个：' + esc(m[0]);
+      if (m.length > 1){
+        for (var i = 1; i < m.length; i++) groupsText += '\n    分组 ' + i + '：' + (m[i] === undefined ? '（未匹配）' : esc(m[i]));
+      }
+      groupsText += '\n';
+      if (m[0] === '') re.lastIndex++;
+      if (count > 2000) break;
+    }
+    out += esc(text.slice(last));
+  } else {
+    m = re.exec(text);
+    if (m){
+      out = esc(text.slice(0, m.index)) + '<mark>' + esc(m[0]) + '</mark>' + esc(text.slice(m.index + m[0].length));
+      count = 1;
+      groupsText = '第 1 个：' + esc(m[0]);
+      for (var j = 1; j < m.length; j++) groupsText += '\n    分组 ' + j + '：' + (m[j] === undefined ? '（未匹配）' : esc(m[j]));
+    } else out = esc(text);
+  }
+
+  document.getElementById('hl').innerHTML = out;
+  var st = document.getElementById('stat');
+  if (count === 0){ st.className = 'msg warn'; st.textContent = '没有匹配到任何内容。检查正则，或者试试去掉/加上 g 标志。'; }
+  else { st.className = 'msg ok'; st.textContent = '共匹配到 ' + count + ' 处' + (count > 2000 ? '（超过 2000 处，已停止）' : ''); }
+
+  document.getElementById('groups').textContent = count ? groupsText : '（没有匹配，也就没有分组）';
+
+  var reped = text.replace(hasG ? re : new RegExp(src, flags + 'g'), rep || '');
+  document.getElementById('reped').textContent = rep ? reped : '（填了「替换成」才有结果）';
+}
+
+function copyRep(){
+  var t = document.getElementById('reped').textContent;
+  if (!t || t.indexOf('（填了') === 0){ return; }
+  navigator.clipboard.writeText(t);
+}
+
+['pat','text','rep'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', run);
+});
+['fg','fi','fm','fs'].forEach(function(id){
+  document.getElementById(id).addEventListener('change', run);
+});
+run();
+</script>
+</body>
+</html>
