@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JSON 在线格式化 / 压缩 / 校验 / 转义（免费，不上传）</title>
+<meta name="description" content="免费在线 JSON 工具：一键美化缩进、压缩成一行、语法校验并定位错误位置、字符串转义与反转义、按键名排序。纯浏览器本地运行。">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header>
+  <a class="logo" href="./index.html">在线工具箱</a>
+  <nav>
+    <a href="./csv-cleaner.html">表格清洗</a>
+    <a href="./json-formatter.html">JSON</a>
+    <a href="./regex-tester.html">正则</a>
+    <a href="./image-compress.html">图片压缩</a>
+    <a href="../index.html">定制服务</a>
+  </nav>
+</header>
+
+<main>
+  <h1>JSON 格式化 / 压缩 / 校验</h1>
+  <p class="lead">美化缩进、压成一行、校验语法并指出错在第几个字符、转义反转义、按键名排序。<span class="pill">不上传</span></p>
+
+  <div class="card">
+    <label>输入 JSON</label>
+    <textarea id="in" placeholder='{"name":"张伟","city":"上海","orders":[{"id":"A001","amount":1200}]}'></textarea>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 140px">
+        <label style="margin-top:0">缩进</label>
+        <select id="indent">
+          <option value="2">2 空格</option>
+          <option value="4">4 空格</option>
+          <option value="tab">Tab</option>
+          <option value="0">压缩（一行）</option>
+        </select>
+      </div>
+      <div style="flex:0 0 120px"><button onclick="fmt()">格式化</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="validate()">只校验</button></div>
+      <div style="flex:0 0 140px"><button class="ghost" onclick="sortKeys()">按键名排序</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="escapeIn()">转义</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="unescapeIn()">反转义</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="clearAll()">清空</button></div>
+    </div>
+    <p class="msg" id="msg"></p>
+  </div>
+
+  <div class="card">
+    <label>结果</label>
+    <pre id="out">（点上面的按钮）</pre>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 140px"><button onclick="copyOut()">复制结果</button></div>
+      <div style="flex:0 0 160px"><button class="ghost" onclick="downloadOut()">下载 .json</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">常见报错是什么意思</h2>
+    <table>
+      <tr><th style="width:220px">报错</th><th>通常原因</th></tr>
+      <tr><td>Unexpected token</td><td>多了或少了逗号、用了中文引号、末尾多了逗号</td></tr>
+      <tr><td>Unexpected end of JSON input</td><td>括号没闭合，或者内容被截断了</td></tr>
+      <tr><td>Expected property name</td><td>对象的键没加双引号（JSON 必须双引号，不能单引号）</td></tr>
+      <tr><td>Bad control character</td><td>字符串里有真实换行，应该写成 \n</td></tr>
+    </table>
+  </div>
+
+  <div class="cta">
+    <b>要处理的是几百个文件、要定时跑、要转成 Excel？</b><br>
+    网页版一次一段。定制版可以做：批量文件转换、JSON 转表格、字段映射与清洗、定时同步、结果推送到群里。<br>
+    邮箱 <b>A18926032483@outlook.com</b> · 或
+    <a href="https://github.com/aizhang-ai/python-office-automation/issues" target="_blank" rel="noopener">GitHub 开 Issue</a>
+  </div>
+</main>
+
+<footer>本工具在你的浏览器里运行，不上传任何数据</footer>
+
+<script>
+function getIndent(){
+  var v = document.getElementById('indent').value;
+  return v === 'tab' ? '\t' : (v === '0' ? 0 : parseInt(v, 10));
+}
+function setMsg(kind, text){
+  var e = document.getElementById('msg');
+  e.className = 'msg ' + (kind || ''); e.textContent = text;
+}
+function setOut(t){ document.getElementById('out').textContent = t; }
+
+function fmt(){
+  var src = document.getElementById('in').value;
+  if (!src.trim()){ setMsg('err', '输入是空的'); return; }
+  try {
+    var obj = JSON.parse(src);
+    var ind = getIndent();
+    setOut(ind === 0 ? JSON.stringify(obj) : JSON.stringify(obj, null, ind));
+    setMsg('ok', ind === 0 ? '已压缩，长度 ' + JSON.stringify(obj).length + ' 字符' : '格式正确，已格式化');
+  } catch (e) {
+    setOut('');
+    setMsg('err', 'JSON 有错：' + e.message);
+  }
+}
+
+function validate(){
+  var src = document.getElementById('in').value;
+  if (!src.trim()){ setMsg('err', '输入是空的'); return; }
+  try {
+    var obj = JSON.parse(src);
+    var kind = Array.isArray(obj) ? '数组' : (obj && typeof obj === 'object' ? '对象' : typeof obj);
+    var n = (obj && typeof obj === 'object') ? Object.keys(obj).length : 0;
+    setMsg('ok', '校验通过 · 顶层是' + kind + (n ? '，' + n + ' 个键' : '') + ' · 共 ' + src.length + ' 字符');
+    setOut(src.length > 3000 ? src.slice(0, 3000) + '\n…（内容较长，只预览前 3000 字符，点「格式化」看全部）' : src);
+  } catch (e) {
+    var m = e.message.match(/position (\d+)/);
+    var pos = m ? parseInt(m[1], 10) : -1;
+    setMsg('err', 'JSON 有错：' + e.message + (pos >= 0 ? '（大概在第 ' + pos + ' 个字符附近）' : ''));
+    if (pos >= 0){
+      var s = Math.max(0, pos - 60);
+      setOut('…' + src.slice(s, pos) + '  ←【这里附近】→  ' + src.slice(pos, pos + 60) + '…');
+    }
+  }
+}
+
+function sortKeysDeep(v){
+  if (Array.isArray(v)) return v.map(sortKeysDeep);
+  if (v && typeof v === 'object'){
+    var o = {};
+    Object.keys(v).sort().forEach(function(k){ o[k] = sortKeysDeep(v[k]); });
+    return o;
+  }
+  return v;
+}
+
+function sortKeys(){
+  var src = document.getElementById('in').value;
+  if (!src.trim()){ setMsg('err', '输入是空的'); return; }
+  try {
+    var obj = JSON.parse(src);
+    var ind = getIndent();
+    setOut(ind === 0 ? JSON.stringify(sortKeysDeep(obj)) : JSON.stringify(sortKeysDeep(obj), null, ind));
+    setMsg('ok', '已按键名排序（嵌套对象也排了）');
+  } catch (e) { setMsg('err', 'JSON 有错：' + e.message); }
+}
+
+function escapeIn(){
+  var s = document.getElementById('in').value;
+  if (!s){ setMsg('err', '输入是空的'); return; }
+  setOut(JSON.stringify(s).slice(1, -1));
+  setMsg('ok', '已转成可放进 JSON 字符串里的形式（不含外层引号）');
+}
+
+function unescapeIn(){
+  var s = document.getElementById('in').value.trim();
+  if (!s){ setMsg('err', '输入是空的'); return; }
+  try {
+    setOut(JSON.parse('"' + s + '"'));
+    setMsg('ok', '已还原');
+  } catch (e) { setMsg('err', '这段不是合法转义串：' + e.message); }
+}
+
+function copyOut(){
+  var t = document.getElementById('out').textContent;
+  if (!t || t === '（点上面的按钮）'){ setMsg('err', '还没有结果'); return; }
+  navigator.clipboard.writeText(t).then(function(){ setMsg('ok', '已复制'); });
+}
+
+function downloadOut(){
+  var t = document.getElementById('out').textContent;
+  if (!t || t === '（点上面的按钮）'){ setMsg('err', '还没有结果'); return; }
+  var blob = new Blob([t], { type: 'application/json;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'data.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+function clearAll(){
+  document.getElementById('in').value = '';
+  setOut('（点上面的按钮）');
+  setMsg('', '');
+}
+</script>
+</body>
+</html>
