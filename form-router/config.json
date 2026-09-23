@@ -1,0 +1,52 @@
+{
+  "inbox_dir": "inbox",
+  "output_dir": "output",
+  "archive_dir": "archive",
+  "log_dir": "logs",
+  "encoding": "utf-8-sig",
+  "id_prefix": "ORD",
+  "required_fields": ["name", "phone", "amount"],
+  "dedupe": {
+    "enabled": true,
+    "keys": ["phone", "product"],
+    "keep": "last"
+  },
+  "archive_originals": true,
+  "rules": [
+    {
+      "name": "大客户",
+      "priority": "high",
+      "owner": "负责人A",
+      "match": [
+        { "field": "amount", "op": "gte", "value": 10000 }
+      ]
+    },
+    {
+      "name": "华东区",
+      "priority": "normal",
+      "owner": "负责人B",
+      "match": [
+        { "field": "city", "op": "in", "value": ["上海", "杭州", "南京", "苏州"] }
+      ]
+    },
+    {
+      "name": "售后咨询",
+      "priority": "normal",
+      "owner": "客服组",
+      "match": [
+        { "field": "product", "op": "contains", "value": "维修" }
+      ]
+    },
+    {
+      "name": "待分配",
+      "priority": "low",
+      "owner": "客服组",
+      "match": []
+    }
+  ],
+  "notify": {
+    "enabled": false,
+    "type": "wecom",
+    "webhook": ""
+  }
+}
