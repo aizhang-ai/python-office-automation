@@ -1,0 +1,8 @@
+﻿order_id,name,phone,email,city,amount,date,__source__
+C001,孙丽,13722223333,sunli@outlook.com,深圳,3100,2026-09-08,门店C.csv
+B001,陈静,13611112222,chenjing@163.com,广州,2300,2026-09-05,门店B.csv
+A001,张伟,13800138000,zhangwei@qq.com,上海,1200,2026-09-01,门店A.csv
+B002,杨帆,13500001111,yangfan@qq.com,北京,1200,2026-09-06,门店B.csv
+A002,李娜,13900139000,lina@gmail.com,北京,980,2026-09-02,门店A.csv
+A004,刘洋,1371234,bad-email,广州,800,2026-09-04,门店A.csv
+C002,周涛,,zhou@,上海,450,2026-09-09,门店C.csv
