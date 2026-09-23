@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>让电脑替你干那些每天重复一遍的活</title>
+<style>
+  :root { --ink:#1a1d21; --sub:#5b6570; --line:#e4e8ec; --bg:#ffffff; --soft:#f7f9fa; --accent:#1f6feb; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,sans-serif;
+         line-height:1.75; font-size:16px; }
+  .wrap { max-width:760px; margin:0 auto; padding:56px 24px 80px; }
+  h1 { font-size:30px; line-height:1.4; margin:0 0 16px; letter-spacing:-.01em; }
+  .lead { font-size:18px; color:var(--sub); margin:0 0 8px; }
+  h2 { font-size:20px; margin:48px 0 16px; padding-top:8px; }
+  .card { border:1px solid var(--line); border-radius:12px; padding:22px 24px; margin:16px 0; background:var(--bg); }
+  .card h3 { margin:0 0 6px; font-size:18px; }
+  .tag { display:inline-block; font-size:13px; color:var(--accent); background:#eef4ff;
+         border-radius:6px; padding:2px 8px; margin-bottom:10px; }
+  .price { color:var(--ink); font-weight:600; }
+  ul { padding-left:20px; margin:8px 0; }
+  li { margin:4px 0; }
+  .muted { color:var(--sub); font-size:15px; }
+  .steps { counter-reset:s; list-style:none; padding:0; }
+  .steps li { counter-increment:s; position:relative; padding-left:34px; margin:12px 0; }
+  .steps li::before { content:counter(s); position:absolute; left:0; top:2px; width:24px; height:24px;
+    border-radius:50%; background:var(--soft); color:var(--sub); font-size:13px; text-align:center; line-height:24px; }
+  .box { background:var(--soft); border-radius:10px; padding:18px 20px; margin:16px 0; }
+  .qr { width:180px; height:180px; border:1px dashed var(--line); border-radius:10px;
+        display:flex; align-items:center; justify-content:center; color:var(--sub); font-size:13px; }
+  a { color:var(--accent); }
+  hr { border:0; border-top:1px solid var(--line); margin:40px 0; }
+  footer { color:var(--sub); font-size:14px; margin-top:48px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>让电脑替你干<br>那些每天得重复一遍的活</h1>
+  <p class="lead">我给你写能直接双击运行的小程序，跑在你自己的电脑上。不用买服务器，不用买系统，数据不出你的电脑。</p>
+
+  <h2>现在就能交付的两个</h2>
+
+  <div class="card">
+    <span class="tag">已交付 · 实测通过</span>
+    <h3>价格 / 竞品监控日报</h3>
+    <p>每天定时去看你指定的几个页面，把价格抓下来跟昨天比。<strong>只有价格变了才发消息给你</strong>，平时不吵。所有记录存成 Excel 能打开的表格。</p>
+    <ul>
+      <li>跑在你自己电脑上，不用服务器、不用装数据库</li>
+      <li>变没变动，推送到企业微信 / 飞书 / 钉钉</li>
+      <li>内置 robots.txt 检查，每天每页只访问一次</li>
+    </ul>
+    <p class="price">¥3,800 起 &nbsp;·&nbsp; 24 小时内交付</p>
+  </div>
+
+  <div class="card">
+    <span class="tag">已交付 · 实测通过</span>
+    <h3>表格批量处理工具</h3>
+    <p>把一堆乱表一次性弄干净：合并、去重、清洗、排序、分组汇总、按条件拆分。每月对账、合并各分公司报表、清洗客户名单，都用它。</p>
+    <ul>
+      <li>手机号、邮箱、日期、金额自动规范化（4 种日期写法统一成一种）</li>
+      <li>按任意列去重，保留第一条或最后一条</li>
+      <li>按城市/部门分组求和、拆成多个文件</li>
+      <li><strong>从不修改你的原文件</strong>，结果单独输出</li>
+    </ul>
+    <p class="price">¥3,000 起 &nbsp;·&nbsp; 24 小时内交付</p>
+  </div>
+
+  <h2>怎么合作</h2>
+  <ol class="steps">
+    <li><strong>你说场景</strong>——微信或邮件告诉我，你们现在是谁在干、多久干一次</li>
+    <li><strong>我先做一个能跑的给你看</strong>——不收钱，跑不起来我直说</li>
+    <li><strong>验收通过再谈钱</strong>——首单支持先交付后付款</li>
+  </ol>
+
+  <div class="box">
+    <p style="margin:0 0 6px"><strong>收费方式</strong></p>
+    <p class="muted" style="margin:0">支付宝 / 银行转账。一般几千元一件，月度维护 ¥800。低于 ¥3,000 的小活不接——真想帮忙的我免费做。</p>
+  </div>
+
+  <h2>找我</h2>
+  <div class="card">
+    <p style="margin:0 0 10px">邮箱：<strong>A18926032483@outlook.com</strong><br>
+      或者直接在项目里 <a href="https://github.com/aizhang-ai/python-office-automation/issues">开一个 Issue</a> 留言</p>
+    <p class="muted" style="margin:0 0 4px">项目地址：<a href="https://github.com/aizhang-ai/python-office-automation">github.com/aizhang-ai/python-office-automation</a></p>
+    <p class="muted" style="margin:0">把你要自动化的那件事用一句话说清楚就行，我回你「能做 / 不能做、大概多少钱」。</p>
+  </div>
+
+  <hr>
+
+  <h2>有些事我不做</h2>
+  <p class="muted">需要登录才能看的内容不抓、绕对方反爬机制不干、高频请求不打、代写论文代考刷量一律拒绝。也不承诺任何收益或"效率提升百分之多少"——能不能用，跑起来试了才知道。</p>
+
+  <footer>
+    页面由个人维护 · 最后更新 2026-09-23<br>
+    <span class="muted">联系方式已填妥，可以发布了</span>
+  </footer>
+
+</div>
+</body>
+</html>

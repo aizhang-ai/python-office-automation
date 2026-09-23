@@ -1,0 +1,50 @@
+{
+  "input_dir": "input",
+  "output_dir": "output",
+  "encoding": "utf-8-sig",
+  "steps": [
+    {
+      "action": "merge",
+      "pattern": "*.csv"
+    },
+    {
+      "action": "clean",
+      "columns": [
+        "phone",
+        "email",
+        "date",
+        "amount"
+      ]
+    },
+    {
+      "action": "dedupe",
+      "key": "phone",
+      "keep": "first"
+    },
+    {
+      "action": "sort",
+      "by": "amount",
+      "order": "desc"
+    },
+    {
+      "action": "group",
+      "by": "city",
+      "sum": [
+        "amount"
+      ],
+      "count": [
+        "phone"
+      ],
+      "output": "汇总.csv"
+    },
+    {
+      "action": "split",
+      "by": "city",
+      "output_dir": "按城市"
+    },
+    {
+      "action": "save",
+      "output": "result.csv"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+  "respect_robots": true,
+  "request_delay_seconds": 3,
+  "push_only_on_change": true,
+  "webhook": {
+    "type": "wecom",
+    "url": ""
+  },
+  "targets": [
+    {
+      "name": "竞品A-主力款",
+      "url": "https://example.com/product/123",
+      "price_regex": ""
+    },
+    {
+      "name": "竞品B-活动页",
+      "url": "https://example.com/promo",
+      "price_regex": ""
+    }
+  ]
+}

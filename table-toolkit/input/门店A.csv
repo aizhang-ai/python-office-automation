@@ -1,0 +1,5 @@
+﻿order_id,name,phone,email,city,amount,date
+A001,张伟,138 0013 8000,ZhangWei@QQ.com,上海,"1,200",2026/9/1
+A002,李娜,139-0013-9000,lina@gmail.com,北京,980,2026年9月2日
+A003,王芳,13800138000,zhangwei@qq.com ,上海,1500,2026.9.3
+A004,刘洋,1371234,bad-email,广州,800,2026-09-04

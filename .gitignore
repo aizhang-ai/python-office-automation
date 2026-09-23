@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+price-monitor/reports/
+price-monitor/history.csv
+table-toolkit/output/
+table-toolkit/run-report.txt
