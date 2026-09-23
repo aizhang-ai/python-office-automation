@@ -1,0 +1,11 @@
+表格处理报告 2026-09-23 20:18:48
+
+1. merge —— 合并 3 个文件，共 9 行，8 列
+2. clean —— 清洗 4 个字段，异常值 3 个
+3. dedupe —— 按「phone」去重，去掉 2 行，剩 7 行
+4. sort —— 按「amount」降序排序
+5. group —— 按「city」分组，得到 4 组，已存为 汇总.csv（明细数据保持不变）
+6. split —— 按「city」拆成 4 个文件，放在 C:\Users\张明一\.openclaw\workspace\ASSETS\products\cn-pack-01\table-toolkit\output\按城市
+7. save —— 已保存 result.csv（7 行）
+
+输出目录：C:\Users\张明一\.openclaw\workspace\ASSETS\products\cn-pack-01\table-toolkit\output
