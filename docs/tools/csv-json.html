@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSV 与 JSON 在线互转（免费，不上传）</title>
+<meta name="description" content="免费在线 CSV 与 JSON 互转：表格转 JSON 数组、JSON 数组转 CSV，支持自定义表头、缩进、分隔符。纯浏览器本地运行，数据不上传。">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header>
+  <a class="logo" href="./index.html">在线工具箱</a>
+  <nav>
+    <a href="./csv-cleaner.html">表格清洗</a>
+    <a href="./csv-json.html">CSV↔JSON</a>
+    <a href="./json-formatter.html">JSON</a>
+    <a href="./regex-tester.html">正则</a>
+    <a href="./image-compress.html">图片压缩</a>
+    <a href="../index.html">定制服务</a>
+  </nav>
+</header>
+
+<main>
+  <h1>CSV ↔ JSON 互转</h1>
+  <p class="lead">表格转 JSON 给程序用，JSON 转表格给 Excel 看。两边都不用装东西。<span class="pill">不上传</span></p>
+
+  <div class="card">
+    <label>输入（CSV 或 JSON 都行，点下面的按钮决定往哪边转）</label>
+    <textarea id="in" placeholder="name,city,amount&#10;张伟,上海,1200&#10;李娜,北京,980"></textarea>
+
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 150px">
+        <label style="margin-top:0">JSON 缩进</label>
+        <select id="indent">
+          <option value="2">2 空格</option>
+          <option value="4">4 空格</option>
+          <option value="0">压缩成一行</option>
+        </select>
+      </div>
+      <div style="flex:0 0 150px">
+        <label style="margin-top:0">CSV 分隔符</label>
+        <select id="delim">
+          <option value=",">逗号 ,</option>
+          <option value="\t">制表符 Tab</option>
+          <option value=";">分号 ;</option>
+        </select>
+      </div>
+      <div class="checks" style="margin:0">
+        <label><input type="checkbox" id="hdr" checked> 第一行是表头</label>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <div style="flex:0 0 150px"><button onclick="toJson()">CSV → JSON</button></div>
+      <div style="flex:0 0 150px"><button onclick="toCsv()">JSON → CSV</button></div>
+      <div style="flex:0 0 140px"><button class="ghost" onclick="loadDemo()">载入示例</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="clearAll()">清空</button></div>
+    </div>
+    <p class="msg" id="msg"></p>
+  </div>
+
+  <div class="card">
+    <label>结果</label>
+    <pre id="out">（点上面的按钮）</pre>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 130px"><button onclick="copyOut()">复制</button></div>
+      <div style="flex:0 0 160px"><button class="ghost" onclick="downloadOut()">下载</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">什么情况下用得上</h2>
+    <ul>
+      <li>后端要 JSON、你手上只有 Excel 导出的 CSV</li>
+      <li>接口返了一堆 JSON，财务要看表格</li>
+      <li>把抓取到的列表数据快速变成可筛选的表格</li>
+    </ul>
+    <p class="muted">嵌套很深的 JSON（对象套对象套数组）转成表格会丢失层级，这种情况建议先只取需要的字段。
+    网页版处理不了的话，可以让我按你的字段结构写转换规则。</p>
+  </div>
+
+  <div class="cta">
+    <b>要每天定时转、几百个文件批量转、按字段规则清洗？</b><br>
+    网页版一次一份。定制版可以做：整个文件夹批量转换、字段映射与重命名、定时跑、结果推送到群里。<br>
+    邮箱 <b>A18926032483@outlook.com</b> · 或
+    <a href="https://github.com/aizhang-ai/python-office-automation/issues" target="_blank" rel="noopener">GitHub 开 Issue</a>
+  </div>
+</main>
+
+<footer>本工具在你的浏览器里运行，不上传任何数据</footer>
+
+<script>
+function parseDelim(){
+  var v = document.getElementById('delim').value;
+  return v === '\\t' ? '\t' : v;
+}
+
+function parseCSV(text, d){
+  var rows = [], row = [], field = '', inQ = false;
+  text = text.replace(/^﻿/, '');
+  for (var i = 0; i < text.length; i++){
+    var c = text[i];
+    if (inQ){
+      if (c === '"'){ if (text[i+1] === '"'){ field += '"'; i++; } else inQ = false; }
+      else field += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === d){ row.push(field); field = ''; }
+      else if (c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c !== '\r') field += c;
+    }
+  }
+  if (field !== '' || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(function(r){ return r.some(function(x){ return x !== ''; }); });
+}
+
+function toCSV(rows){
+  return rows.map(function(r){
+    return r.map(function(v){
+      var s = v == null ? '' : String(v);
+      return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }).join(',');
+  }).join('\r\n');
+}
+
+function csvToJson(text, hasHeader, d){
+  var rows = parseCSV(text, d);
+  if (!rows.length) return [];
+  if (!hasHeader) return rows;
+  var head = rows[0], out = [];
+  rows.slice(1).forEach(function(r){
+    var o = {};
+    head.forEach(function(h, i){ o[h] = r[i] == null ? '' : r[i]; });
+    out.push(o);
+  });
+  return out;
+}
+
+function jsonToCsv(obj){
+  var arr = Array.isArray(obj) ? obj : [obj];
+  var keys = [], seen = {};
+  arr.forEach(function(o){
+    if (o && typeof o === 'object' && !Array.isArray(o)){
+      Object.keys(o).forEach(function(k){ if (!(k in seen)){ seen[k] = 1; keys.push(k); } });
+    }
+  });
+  if (!keys.length) return '';
+  var rows = [keys.slice()];
+  arr.forEach(function(o){
+    rows.push(keys.map(function(k){
+      return (o && o[k] != null) ? String(o[k]) : '';
+    }));
+  });
+  return toCSV(rows);
+}
+
+function getIndent(){
+  var v = document.getElementById('indent').value;
+  return v === '0' ? 0 : parseInt(v, 10);
+}
+
+function setMsg(kind, text){
+  var e = document.getElementById('msg');
+  e.className = 'msg ' + (kind || ''); e.textContent = text;
+}
+
+function toJson(){
+  var src = document.getElementById('in').value;
+  if (!src.trim()){ setMsg('err', '输入是空的'); return; }
+  try {
+    var data = csvToJson(src, document.getElementById('hdr').checked, parseDelim());
+    var ind = getIndent();
+    document.getElementById('out').textContent = JSON.stringify(data, null, ind);
+    setMsg('ok', '转成 ' + data.length + ' 条记录');
+  } catch (e){ setMsg('err', '转换失败：' + e.message); }
+}
+
+function toCsv(){
+  var src = document.getElementById('in').value;
+  if (!src.trim()){ setMsg('err', '输入是空的'); return; }
+  try {
+    var obj = JSON.parse(src);
+    var csv = jsonToCsv(obj);
+    if (!csv){ setMsg('err', '这段 JSON 里没有可转成表格的对象（需要对象或对象数组）'); return; }
+    document.getElementById('out').textContent = csv;
+    var n = csv.split('\r\n').length - 1;
+    setMsg('ok', '转成表格，共 ' + n + ' 行数据（含表头）');
+  } catch (e){ setMsg('err', 'JSON 有错：' + e.message); }
+}
+
+function copyOut(){
+  var t = document.getElementById('out').textContent;
+  if (!t || t === '（点上面的按钮）'){ setMsg('err', '还没有结果'); return; }
+  navigator.clipboard.writeText(t).then(function(){ setMsg('ok', '已复制'); });
+}
+
+function downloadOut(){
+  var t = document.getElementById('out').textContent;
+  if (!t || t === '（点上面的按钮）'){ setMsg('err', '还没有结果'); return; }
+  var isJson = t.trim().charAt(0) === '[' || t.trim().charAt(0) === '{';
+  var blob = new Blob([isJson ? t : '﻿' + t], { type: (isJson ? 'application/json' : 'text/csv') + ';charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = isJson ? 'data.json' : 'data.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+function loadDemo(){
+  document.getElementById('in').value = 'name,city,amount,date\n张伟,上海,1200,2026-09-01\n李娜,北京,980,2026-09-02\n王芳,广州,2300,2026-09-03';
+  setMsg('', '示例已载入，点「CSV → JSON」');
+}
+
+function clearAll(){
+  document.getElementById('in').value = '';
+  document.getElementById('out').textContent = '（点上面的按钮）';
+  setMsg('', '');
+}
+</script>
+</body>
+</html>
