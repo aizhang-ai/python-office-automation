@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文本差异对比 diff 在线工具（免费，不上传）</title>
+<meta name="description" content="免费在线文本差异对比：左右两份文本逐行比对，标出新增行、删除行、未改动行，支持忽略大小写与空白，可导出 diff 文件。纯浏览器本地运行，数据不上传。">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .diffwrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:720px){.diffwrap{grid-template-columns:1fr}}
+  .diffwrap pre{margin:0;max-height:420px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+  .ln{display:block;padding:0 4px}
+  .add{background:#e8f7ee}
+  .del{background:#fdecec}
+  .mark{color:#94a3b8;user-select:none}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="./index.html">在线工具箱</a>
+  <nav>
+    <a href="./csv-cleaner.html">表格清洗</a>
+    <a href="./csv-json.html">CSV↔JSON</a>
+    <a href="./json-formatter.html">JSON</a>
+    <a href="./regex-tester.html">正则</a>
+    <a href="./text-diff.html">文本对比</a>
+    <a href="./image-compress.html">图片压缩</a>
+    <a href="../buy.html">直接买</a>
+    <a href="../index.html">定制服务</a>
+  </nav>
+</header>
+
+<main>
+  <h1>文本差异对比</h1>
+  <p class="lead">左右各贴一份，逐行标出哪里加了、哪里删了。改合同、改配置、改代码前后对一遍最省事。<span class="pill">不上传</span></p>
+
+  <div class="card">
+    <div class="diffwrap">
+      <div>
+        <label>原文（改之前）</label>
+        <textarea id="a" placeholder="第一行&#10;第二行&#10;第三行"></textarea>
+      </div>
+      <div>
+        <label>新文（改之后）</label>
+        <textarea id="b" placeholder="第一行&#10;第二行改了&#10;第三行&#10;第四行是新的"></textarea>
+      </div>
+    </div>
+
+    <div class="checks" style="margin-top:10px">
+      <label><input type="checkbox" id="igcase"> 忽略大小写</label>
+      <label><input type="checkbox" id="igspace"> 忽略空白差异（多个空格算一个、行尾空格不算）</label>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <div style="flex:0 0 130px"><button onclick="runDiff()">开始对比</button></div>
+      <div style="flex:0 0 150px"><button class="ghost" onclick="loadDemo()">载入示例</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="swapAB()">左右互换</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="clearAll()">清空</button></div>
+    </div>
+    <p class="msg" id="msg"></p>
+  </div>
+
+  <div class="card">
+    <label>结果（<span class="add">&nbsp;新增行&nbsp;</span> <span class="del">&nbsp;删除行&nbsp;</span> 无底色＝未改动）</label>
+    <div class="diffwrap" style="margin-top:6px">
+      <pre id="left">（点上面的「开始对比」）</pre>
+      <pre id="right">（点上面的「开始对比」）</pre>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div style="flex:0 0 130px"><button onclick="copyOut()">复制差异</button></div>
+      <div style="flex:0 0 160px"><button class="ghost" onclick="downloadOut()">下载 .diff</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">什么情况下用得上</h2>
+    <ul>
+      <li>合同/协议改了一版，要确认对方到底动了哪几条</li>
+      <li>配置文件改完上线前，和上一版对一遍有没有改错地方</li>
+      <li>两份名单、两份报价单，看差在哪几行</li>
+    </ul>
+    <p class="muted">这是逐行对比：一行里改了一个字，会算成「删掉旧行 + 新增新行」。
+    行数很多（几千行以上）时会自动降级为整段替换，保证不卡死浏览器。</p>
+  </div>
+
+  <div class="cta">
+    <b>要每次自动比对、几十份文件批量比、比完发到群里？</b><br>
+    网页版一次比一对。定制版可以做：文件夹里所有文件两两比对、定时跑、出 Excel 差异清单、结果推送到企业微信/钉钉/飞书。<br>
+    邮箱 <b>A18926032483@outlook.com</b> · 或
+    <a href="https://github.com/aizhang-ai/python-office-automation/issues" target="_blank" rel="noopener">GitHub 开 Issue</a>
+  </div>
+</main>
+
+<footer>本工具在你的浏览器里运行，不上传任何数据</footer>
+
+<script>
+function splitLines(text){
+  var s = String(text == null ? '' : text).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  if (s === '') return [];
+  var arr = s.split('\n');
+  if (arr.length > 1 && arr[arr.length - 1] === '') arr.pop();
+  return arr;
+}
+
+function norm(line, opt){
+  var s = line;
+  if (opt.ignoreCase) s = s.toLowerCase();
+  if (opt.ignoreSpace) s = s.replace(/\s+/g, ' ').replace(/^ +| +$/g, '');
+  return s;
+}
+
+function lcsOps(A, B, offA, offB, out){
+  var n = A.length, m = B.length, i, j;
+  if (n === 0){ for (j = 0; j < m; j++) out.push({ t: 'add', b: offB + j }); return; }
+  if (m === 0){ for (i = 0; i < n; i++) out.push({ t: 'del', a: offA + i }); return; }
+  if (n * m > 4000000){
+    for (i = 0; i < n; i++) out.push({ t: 'del', a: offA + i });
+    for (j = 0; j < m; j++) out.push({ t: 'add', b: offB + j });
+    return;
+  }
+  var W = m + 1;
+  var dp = new Int32Array((n + 1) * W);
+  for (i = n - 1; i >= 0; i--){
+    for (j = m - 1; j >= 0; j--){
+      dp[i * W + j] = (A[i] === B[j])
+        ? dp[(i + 1) * W + j + 1] + 1
+        : Math.max(dp[(i + 1) * W + j], dp[i * W + j + 1]);
+    }
+  }
+  i = 0; j = 0;
+  while (i < n && j < m){
+    if (A[i] === B[j]){ out.push({ t: 'eq', a: offA + i, b: offB + j }); i++; j++; }
+    else if (dp[(i + 1) * W + j] >= dp[i * W + j + 1]){ out.push({ t: 'del', a: offA + i }); i++; }
+    else { out.push({ t: 'add', b: offB + j }); j++; }
+  }
+  while (i < n){ out.push({ t: 'del', a: offA + i }); i++; }
+  while (j < m){ out.push({ t: 'add', b: offB + j }); j++; }
+}
+
+function diffLines(a, b, opt){
+  var A = a.map(function (l){ return norm(l, opt); });
+  var B = b.map(function (l){ return norm(l, opt); });
+  var s = 0;
+  while (s < A.length && s < B.length && A[s] === B[s]) s++;
+  var eA = A.length, eB = B.length;
+  while (eA > s && eB > s && A[eA - 1] === B[eB - 1]){ eA--; eB--; }
+  var ops = [], i;
+  for (i = 0; i < s; i++) ops.push({ t: 'eq', a: i, b: i });
+  lcsOps(A.slice(s, eA), B.slice(s, eB), s, s, ops);
+  for (i = 0; i < A.length - eA; i++) ops.push({ t: 'eq', a: eA + i, b: eB + i });
+  return ops;
+}
+
+function stats(ops){
+  var st = { add: 0, del: 0, same: 0 };
+  ops.forEach(function (o){
+    if (o.t === 'add') st.add++;
+    else if (o.t === 'del') st.del++;
+    else st.same++;
+  });
+  return st;
+}
+
+function toUnified(ops, a, b){
+  return ops.map(function (o){
+    if (o.t === 'eq') return '  ' + a[o.a];
+    if (o.t === 'del') return '- ' + a[o.a];
+    return '+ ' + b[o.b];
+  }).join('\n');
+}
+
+function esc(s){
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderSide(ops, a, b){
+  var L = '', R = '';
+  ops.forEach(function (o){
+    if (o.t === 'eq'){
+      L += '<span class="ln">' + esc(a[o.a]) + '</span>';
+      R += '<span class="ln">' + esc(b[o.b]) + '</span>';
+    } else if (o.t === 'del'){
+      L += '<span class="ln del"><span class="mark">- </span>' + esc(a[o.a]) + '</span>';
+    } else {
+      R += '<span class="ln add"><span class="mark">+ </span>' + esc(b[o.b]) + '</span>';
+    }
+  });
+  return { left: L, right: R };
+}
+
+var lastOut = '';
+
+function setMsg(kind, text){
+  var e = document.getElementById('msg');
+  e.className = 'msg ' + (kind || '');
+  e.textContent = text;
+}
+
+function getOpt(){
+  return {
+    ignoreCase: document.getElementById('igcase').checked,
+    ignoreSpace: document.getElementById('igspace').checked
+  };
+}
+
+function runDiff(){
+  var a = splitLines(document.getElementById('a').value);
+  var b = splitLines(document.getElementById('b').value);
+  if (!a.length && !b.length){ setMsg('err', '两边都是空的'); return null; }
+  var ops = diffLines(a, b, getOpt());
+  var st = stats(ops);
+  var side = renderSide(ops, a, b);
+  document.getElementById('left').innerHTML = side.left || '<span class="mark">（原文为空）</span>';
+  document.getElementById('right').innerHTML = side.right || '<span class="mark">（新文为空）</span>';
+  lastOut = toUnified(ops, a, b);
+  setMsg(st.add + st.del ? 'ok' : '', '新增 ' + st.add + ' 行 · 删除 ' + st.del + ' 行 · 未改动 ' + st.same + ' 行');
+  return { ops: ops, stats: st, unified: lastOut };
+}
+
+function copyOut(){
+  if (!lastOut){ setMsg('err', '还没有结果'); return; }
+  navigator.clipboard.writeText(lastOut).then(function (){ setMsg('ok', '已复制'); });
+}
+
+function downloadOut(){
+  if (!lastOut){ setMsg('err', '还没有结果'); return; }
+  var blob = new Blob([lastOut], { type: 'text/plain;charset=utf-8' });
+  var el = document.createElement('a');
+  el.href = URL.createObjectURL(blob);
+  el.download = 'diff.diff';
+  document.body.appendChild(el); el.click();
+  setTimeout(function (){ URL.revokeObjectURL(el.href); el.remove(); }, 1000);
+}
+
+function loadDemo(){
+  document.getElementById('a').value = '甲方：张明一\n乙方：某某科技有限公司\n服务内容：表格批量处理\n交付时间：2026-09-30\n合同金额：9800 元\n付款方式：验收后付款';
+  document.getElementById('b').value = '甲方：张明一\n乙方：某某科技有限公司\n服务内容：表格批量处理与价格监控\n交付时间：2026-10-08\n合同金额：12800 元\n付款方式：验收后付款\n违约责任：逾期每日按千分之三计';
+  setMsg('', '示例已载入，点「开始对比」');
+}
+
+function swapAB(){
+  var t = document.getElementById('a').value;
+  document.getElementById('a').value = document.getElementById('b').value;
+  document.getElementById('b').value = t;
+  if (lastOut) runDiff();
+}
+
+function clearAll(){
+  document.getElementById('a').value = '';
+  document.getElementById('b').value = '';
+  document.getElementById('left').innerHTML = '（点上面的「开始对比」）';
+  document.getElementById('right').innerHTML = '（点上面的「开始对比」）';
+  lastOut = '';
+  setMsg('', '');
+}
+</script>
+<div style="text-align:center;color:#94a3b8;font-size:12px;margin:24px 0 8px">本站总访问 <span id="vercount_value_site_pv">-</span> 次 · 本页 <span id="vercount_value_page_pv">-</span> 次</div><script async src="https://vercount.one/js"></script>
+</body>
+</html>
