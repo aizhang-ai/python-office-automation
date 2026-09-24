@@ -4,3 +4,6 @@ price-monitor/reports/
 price-monitor/history.csv
 table-toolkit/output/
 table-toolkit/run-report.txt
+daily-brief/output/
+daily-brief/input/*.csv
+file-tidy/output/
