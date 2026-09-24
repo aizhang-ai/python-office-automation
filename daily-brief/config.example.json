@@ -1,0 +1,25 @@
+{
+  "input_dir": "input",
+  "output_dir": "output",
+  "file_pattern": "*.csv",
+  "recursive": true,
+  "encoding": "auto",
+  "date_field": "date",
+  "amount_field": "amount",
+  "group_fields": ["city", "channel"],
+  "top_field": "order_id",
+  "top_n": 5,
+  "compare_mode": "previous_day",
+  "alerts": {
+    "drop_pct": 20,
+    "rise_pct": 50,
+    "min_amount": 0,
+    "min_orders": 0
+  },
+  "history_file": "history.csv",
+  "webhook": {
+    "enabled": false,
+    "type": "wecom",
+    "url": ""
+  }
+}
