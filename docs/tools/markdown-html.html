@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Markdown 转 HTML 在线工具（免费，不上传）</title>
+<meta name="description" content="免费在线 Markdown 转 HTML：支持标题、粗体斜体、列表、表格、代码块、引用、链接图片，可生成完整 HTML 文档或直接复制片段。纯浏览器本地转换，数据不上传。">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .mdwrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:760px){.mdwrap{grid-template-columns:1fr}}
+  .mdwrap textarea{min-height:280px}
+  .mdout{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;max-height:420px;overflow:auto;font-size:14px;line-height:1.7}
+  .mdout code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:13px}
+  .mdout pre{background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:8px;overflow:auto}
+  .mdout pre code{background:none;color:inherit;padding:0}
+  .mdout table{border-collapse:collapse;width:100%;margin:8px 0}
+  .mdout th,.mdout td{border:1px solid #e5e7eb;padding:6px 8px;text-align:left}
+  .mdout th{background:#f8fafc}
+  .mdout blockquote{margin:8px 0;padding:6px 12px;border-left:4px solid #cbd5e1;color:#475569;background:#f8fafc}
+  .mdout img{max-width:100%}
+  pre.raw{background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:8px;max-height:420px;overflow:auto;white-space:pre-wrap;word-break:break-all;font-size:12.5px}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="./index.html">在线工具箱</a>
+  <nav>
+    <a href="./csv-cleaner.html">表格清洗</a>
+    <a href="./csv-json.html">CSV↔JSON</a>
+    <a href="./json-formatter.html">JSON</a>
+    <a href="./regex-tester.html">正则</a>
+    <a href="./text-diff.html">文本对比</a>
+    <a href="./markdown-html.html">MD转HTML</a>
+    <a href="./image-compress.html">图片压缩</a>
+    <a href="../buy.html">直接买</a>
+    <a href="../index.html">定制服务</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Markdown 转 HTML</h1>
+  <p class="lead">左边贴 Markdown，右边立刻出 HTML——能预览、能复制代码、能下载成 .html 文件。
+  写 README、写公众号、往 CMS 里贴内容都省一步。<span class="pill">不上传</span></p>
+
+  <div class="card">
+    <div class="mdwrap">
+      <div>
+        <label>Markdown 原文</label>
+        <textarea id="src" placeholder="# 标题&#10;&#10;正文 **加粗** 和 `代码`。&#10;&#10;- 列表一&#10;- 列表二"></textarea>
+      </div>
+      <div>
+        <label>转换结果预览</label>
+        <div class="mdout" id="preview">（点下面的「开始转换」）</div>
+      </div>
+    </div>
+
+    <div class="checks" style="margin-top:10px">
+      <label><input type="checkbox" id="fulldoc"> 生成完整 HTML 文件（含 head 和基础样式，可直接双击打开）</label>
+      <label><input type="checkbox" id="nl2br"> 单换行也转成 &lt;br&gt;（中文写作习惯）</label>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <div style="flex:0 0 130px"><button onclick="runMd()">开始转换</button></div>
+      <div style="flex:0 0 150px"><button class="ghost" onclick="loadDemo()">载入示例</button></div>
+      <div style="flex:0 0 150px"><button class="ghost" onclick="loadFile()">打开 .md 文件</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="clearAll()">清空</button></div>
+    </div>
+    <p class="msg" id="msg"></p>
+  </div>
+
+  <div class="card">
+    <div class="row" style="align-items:center">
+      <div style="flex:1"><label>HTML 源码</label></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="copyOut()">复制源码</button></div>
+      <div style="flex:0 0 130px"><button class="ghost" onclick="downloadOut()">下载 .html</button></div>
+    </div>
+    <pre class="raw" id="out" style="margin-top:6px">（点上面的「开始转换」）</pre>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">支持哪些语法</h2>
+    <div class="mdwrap" style="gap:20px">
+      <ul>
+        <li>标题 <code>#</code> ~ <code>######</code></li>
+        <li>粗体 <code>**x**</code>、斜体 <code>*x*</code>、删除线 <code>~~x~~</code></li>
+        <li>行内代码 <code>`x`</code>、围栏代码块 <code>```</code></li>
+        <li>无序列表 <code>-</code> <code>*</code> <code>+</code>、有序列表 <code>1.</code></li>
+        <li>表格（<code>|</code> 分隔，第二行 <code>|---|</code>）</li>
+      </ul>
+      <ul>
+        <li>引用 <code>&gt;</code>、分割线 <code>---</code></li>
+        <li>链接 <code>[文字](地址)</code>、图片 <code>![说明](地址)</code></li>
+        <li>标题自动加 <code>id</code> 锚点，可做目录跳转</li>
+        <li>HTML 特殊字符自动转义，不会破坏页面</li>
+        <li><b>暂不支持</b>：嵌套列表、脚注、任务列表复选框、自定义容器</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cta">
+    <b>要一次转几百篇、要转完自动上传、要按模板套样式？</b><br>
+    网页版一次一篇。定制版可以做：整个文件夹批量转换、套你的 CSS 模板、自动加导航与目录、
+    定时跑并把结果推到企业微信/钉钉/飞书。<br>
+    邮箱 <b>A18926032483@outlook.com</b> · 或
+    <a href="https://github.com/aizhang-ai/python-office-automation/issues" target="_blank" rel="noopener">GitHub 开 Issue</a>
+  </div>
+</main>
+
+<footer>本工具在你的浏览器里运行，不上传任何数据</footer>
+
+<script>
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function slug(s){
+  var t = String(s).toLowerCase().replace(/[`*_~\[\]()#!]/g, '');
+  t = t.replace(/\s+/g, '-').replace(/[^\w\u4e00-\u9fa5-]/g, '');
+  return t || 'section';
+}
+
+// 行内语法。行内代码先抠出来占位，避免里面的 * 和 [] 被当成语法
+function inlineMd(s){
+  var codes = [];
+  var out = String(s).replace(/`([^`]+)`/g, function (_, c){
+    codes.push(esc(c));
+    return '\u0000' + (codes.length - 1) + '\u0000';
+  });
+  out = esc(out);
+  out = out.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, function (_, alt, url){
+    return '<img src="' + url + '" alt="' + alt + '">';
+  });
+  out = out.replace(/\[([^\]]*)\]\(([^)\s]+)\)/g, function (_, txt, url){
+    return '<a href="' + url + '" target="_blank" rel="noopener">' + txt + '</a>';
+  });
+  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  out = out.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+  out = out.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+  out = out.replace(/\u0000(\d+)\u0000/g, function (_, i){
+    return '<code>' + codes[Number(i)] + '</code>';
+  });
+  return out;
+}
+
+function splitRow(line){
+  var s = String(line).trim();
+  if (s.indexOf('|') === 0) s = s.slice(1);
+  if (s.charAt(s.length - 1) === '|') s = s.slice(0, -1);
+  return s.split('|').map(function (c){ return c.trim(); });
+}
+
+function isTableSep(line){
+  var s = String(line).trim();
+  if (s.indexOf('|') < 0) return false;
+  return /^[\s|:-]+$/.test(s) && s.indexOf('-') >= 0;
+}
+
+function mdToHtml(md, opt){
+  opt = opt || {};
+  var lines = String(md == null ? '' : md).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  var html = [], i = 0, n = lines.length, usedIds = {};
+
+  function push(s){ html.push(s); }
+
+  while (i < n){
+    var line = lines[i];
+    var t = line.trim();
+
+    if (t === '') { i++; continue; }
+
+    // 围栏代码块
+    if (t.indexOf('```') === 0){
+      var lang = t.slice(3).trim();
+      var buf = [];
+      i++;
+      while (i < n && lines[i].trim().indexOf('```') !== 0){ buf.push(lines[i]); i++; }
+      i++;
+      push('<pre><code' + (lang ? ' class="language-' + esc(lang) + '"' : '') + '>' +
+           esc(buf.join('\n')) + '</code></pre>');
+      continue;
+    }
+
+    // 分割线
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(t)) { push('<hr>'); i++; continue; }
+
+    // 标题
+    var h = t.match(/^(#{1,6})\s+(.*)$/);
+    if (h){
+      var lv = h[1].length;
+      var text = inlineMd(h[2].trim());
+      var base = slug(h[2].trim());
+      var id = base;
+      if (usedIds[base] === undefined) { usedIds[base] = 1; }
+      else { id = base + '-' + usedIds[base]; usedIds[base]++; }
+      push('<h' + lv + ' id="' + id + '">' + text + '</h' + lv + '>');
+      i++;
+      continue;
+    }
+
+    // 引用
+    if (t.indexOf('>') === 0){
+      var qb = [];
+      while (i < n && lines[i].trim().indexOf('>') === 0){
+        qb.push(lines[i].trim().replace(/^>\s?/, ''));
+        i++;
+      }
+      // 先按真实换行拼接，转义之后再把换行换成 <br> 或空格（反过来会被转义成 &lt;br&gt;）
+      push('<blockquote>' + inlineMd(qb.join('\n')).replace(/\n/g, opt.br ? '<br>' : ' ') + '</blockquote>');
+      continue;
+    }
+
+    // 表格
+    if (t.indexOf('|') >= 0 && i + 1 < n && isTableSep(lines[i + 1])){
+      var head = splitRow(lines[i]);
+      i += 2;
+      var body = [];
+      while (i < n && lines[i].trim().indexOf('|') >= 0 && lines[i].trim() !== ''){
+        body.push(splitRow(lines[i]));
+        i++;
+      }
+      var tb = ['<table>', '<thead>', '<tr>'];
+      head.forEach(function (c){ tb.push('<th>' + inlineMd(c) + '</th>'); });
+      tb.push('</tr>', '</thead>');
+      if (body.length){
+        tb.push('<tbody>');
+        body.forEach(function (r){
+          tb.push('<tr>');
+          head.forEach(function (_, k){ tb.push('<td>' + inlineMd(r[k] == null ? '' : r[k]) + '</td>'); });
+          tb.push('</tr>');
+        });
+        tb.push('</tbody>');
+      }
+      tb.push('</table>');
+      push(tb.join(''));
+      continue;
+    }
+
+    // 无序列表
+    if (/^[-*+]\s+/.test(t)){
+      var items = [];
+      while (i < n && /^[-*+]\s+/.test(lines[i].trim())){
+        items.push(inlineMd(lines[i].trim().replace(/^[-*+]\s+/, '')));
+        i++;
+      }
+      push('<ul>' + items.map(function (x){ return '<li>' + x + '</li>'; }).join('') + '</ul>');
+      continue;
+    }
+
+    // 有序列表
+    if (/^\d+[.)]\s+/.test(t)){
+      var oitems = [];
+      while (i < n && /^\d+[.)]\s+/.test(lines[i].trim())){
+        oitems.push(inlineMd(lines[i].trim().replace(/^\d+[.)]\s+/, '')));
+        i++;
+      }
+      push('<ol>' + oitems.map(function (x){ return '<li>' + x + '</li>'; }).join('') + '</ol>');
+      continue;
+    }
+
+    // 段落
+    var pb = [];
+    while (i < n){
+      var cur = lines[i].trim();
+      if (cur === '') break;
+      if (/^(#{1,6})\s+/.test(cur)) break;
+      if (/^[-*+]\s+/.test(cur) || /^\d+[.)]\s+/.test(cur)) break;
+      if (cur.indexOf('>') === 0) break;
+      if (cur.indexOf('```') === 0) break;
+      if (/^(-{3,}|\*{3,}|_{3,})$/.test(cur)) break;
+      if (cur.indexOf('|') >= 0 && i + 1 < n && isTableSep(lines[i + 1])) break;
+      pb.push(cur);
+      i++;
+    }
+    if (pb.length){
+      // 段落内换行：标准 Markdown 当空格，勾了「单换行转 <br>」就按中文写作习惯断行
+      push('<p>' + inlineMd(pb.join('\n')).replace(/\n/g, opt.br ? '<br>' : ' ') + '</p>');
+    } else i++;
+  }
+
+  var body = html.join('\n');
+  if (!opt.fullDoc) return body;
+
+  return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>' + (opt.title || '文档') + '</title>\n' +
+    '<style>\nbody{max-width:760px;margin:32px auto;padding:0 16px;font-family:-apple-system,' +
+    '"Microsoft YaHei",sans-serif;line-height:1.75;color:#1f2937}\n' +
+    'code{background:#f1f5f9;padding:1px 5px;border-radius:4px}\n' +
+    'pre{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:8px;overflow:auto}\n' +
+    'pre code{background:none;color:inherit;padding:0}\n' +
+    'table{border-collapse:collapse;width:100%}\n' +
+    'th,td{border:1px solid #e5e7eb;padding:6px 8px;text-align:left}\n' +
+    'th{background:#f8fafc}\n' +
+    'blockquote{margin:12px 0;padding:6px 12px;border-left:4px solid #cbd5e1;background:#f8fafc}\n' +
+    'img{max-width:100%}\n</style>\n</head>\n<body>\n' + body + '\n</body>\n</html>';
+}
+
+var lastOut = '';
+
+function setMsg(kind, text){
+  var e = document.getElementById('msg');
+  e.className = 'msg ' + (kind || '');
+  e.textContent = text;
+}
+
+function getOpt(){
+  return {
+    fullDoc: document.getElementById('fulldoc').checked,
+    br: document.getElementById('nl2br').checked
+  };
+}
+
+function runMd(){
+  var src = document.getElementById('src').value;
+  if (!src.trim()) { setMsg('err', '左边是空的'); return null; }
+  var opt = getOpt();
+  lastOut = mdToHtml(src, opt);
+  document.getElementById('out').textContent = lastOut;
+  document.getElementById('preview').innerHTML = mdToHtml(src, { br: opt.br });
+  var tags = (lastOut.match(/<(h[1-6]|p|li|tr|pre)\b/g) || []).length;
+  setMsg('ok', '转换完成：' + lastOut.length + ' 字符，' + tags + ' 个块级元素');
+  return lastOut;
+}
+
+function copyOut(){
+  if (!lastOut) { setMsg('err', '还没有结果'); return; }
+  navigator.clipboard.writeText(lastOut).then(function (){ setMsg('ok', '已复制 HTML 源码'); });
+}
+
+function downloadOut(){
+  if (!lastOut) { setMsg('err', '还没有结果'); return; }
+  var text = lastOut;
+  var isFull = /^\s*<!DOCTYPE html>/i.test(text);
+  if (!isFull){
+    text = '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="utf-8">\n<title>文档</title>\n</head>\n<body>\n' + text + '\n</body>\n</html>';
+  }
+  var blob = new Blob([text], { type: 'text/html;charset=utf-8' });
+  var el = document.createElement('a');
+  el.href = URL.createObjectURL(blob);
+  el.download = 'document.html';
+  document.body.appendChild(el); el.click();
+  setTimeout(function (){ URL.revokeObjectURL(el.href); el.remove(); }, 1000);
+  setMsg('ok', '已下载 document.html');
+}
+
+function loadDemo(){
+  document.getElementById('src').value = [
+    '# 每日经营简报',
+    '',
+    '> 数据口径：金额字段 `amount`，日期字段 `date`',
+    '',
+    '## 一、核心指标',
+    '',
+    '| 指标 | 今日 | 环比 |',
+    '|---|---|---|',
+    '| 销售额 | ¥14,112.25 | +117.7% |',
+    '| 订单数 | 14 | +6 |',
+    '',
+    '## 二、告警',
+    '',
+    '- 销售额较上一周期**上涨 117.7%**，超出阈值 50%',
+    '- 广州门店缺 2 天数据，需补导出',
+    '',
+    '## 三、跑法',
+    '',
+    '1. 把 CSV 丢进 `input` 目录',
+    '2. 双击 `run.bat`',
+    '3. 复制 `output/daily-brief.txt` 发到群里',
+    '',
+    '```python',
+    'python daily_brief.py --dry-run',
+    '```',
+    '',
+    '详情见 [项目主页](https://github.com/aizhang-ai/python-office-automation)。',
+    '',
+    '---',
+    '',
+    '*由 daily_brief.py 自动生成*'
+  ].join('\n');
+  setMsg('', '示例已载入，点「开始转换」');
+}
+
+function loadFile(){
+  var inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.md,.markdown,.txt,text/markdown,text/plain';
+  inp.onchange = function (){
+    var f = inp.files && inp.files[0];
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function (){
+      document.getElementById('src').value = String(fr.result || '');
+      setMsg('', '已载入 ' + f.name + '，点「开始转换」');
+    };
+    fr.readAsText(f, 'utf-8');
+  };
+  inp.click();
+}
+
+function clearAll(){
+  document.getElementById('src').value = '';
+  document.getElementById('out').textContent = '（点上面的「开始转换」）';
+  document.getElementById('preview').innerHTML = '（点上面的「开始转换」）';
+  lastOut = '';
+  setMsg('', '');
+}
+</script>
+<div style="text-align:center;color:#94a3b8;font-size:12px;margin:24px 0 8px">本站总访问 <span id="vercount_value_site_pv">-</span> 次 · 本页 <span id="vercount_value_page_pv">-</span> 次</div><script async src="https://vercount.one/js"></script>
+</body>
+</html>
