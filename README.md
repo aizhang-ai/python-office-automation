@@ -1,4 +1,4 @@
-# 四个能直接跑的自动化小工具
+# 五个能直接跑的自动化小工具
 
 都是**纯 Python 标准库**，不需要 `pip install` 任何东西，不需要服务器，不需要注册任何平台。
 装了 Python 3.8 以上（[免费下载](https://www.python.org/downloads/)），双击 `run.bat` 就能用。
@@ -9,6 +9,7 @@
 | [`table-toolkit/`](table-toolkit/) | 一堆乱表一次性弄干净：合并、去重、清洗、排序、分组汇总、按条件拆分 | 财务、运营、人事、销售 —— 任何要用 Excel 的人 |
 | [`form-router/`](form-router/) | 订单 / 表单进来自动校验、去重、按规则分派负责人，异常单独挑出来 | 电商、教育、本地商家 |
 | [`file-tidy/`](file-tidy/) | 乱文件夹一键整理：按扩展名分类、按模板批量重命名、按内容查重（不删原件） | 设计、法务、行政、摄影 |
+| [`daily-brief/`](daily-brief/) | 读本地 CSV 出每日经营简报：销售额 / 单数 / 客单价与环比、按维度拆分、TOP 榜、阈值告警，输出能直接粘进群的日报 | 老板、店长、运营负责人 |
 
 ---
 
@@ -17,7 +18,7 @@
 因为要能在别人的电脑上跑起来。
 
 一个需要 `pip install` 的工具，在非技术同事那里就卡在第一步：装不上、装错版本、公司网络限制、没管理员权限。
-所以这两个工具只依赖 Python 自带的东西，**复制文件夹到任何一台装了 Python 的电脑上都能跑**。
+所以这些工具只依赖 Python 自带的东西，**复制文件夹到任何一台装了 Python 的电脑上都能跑**。
 
 ---
 
@@ -35,6 +36,12 @@ cd table-toolkit
 python table_tool.py
 ```
 
+
+# 每日经营简报
+cd daily-brief
+python tests/make_testdata.py   # 先造 5 天演示数据
+python daily_brief.py --dry-run  # 只打印，不写文件
+
 Windows 用户直接双击目录里的 `run.bat` 就行。详细说明见各目录下的 `README.md`。
 
 ---
@@ -49,7 +56,7 @@ Windows 用户直接双击目录里的 `run.bat` 就行。详细说明见各目�
 ## 关于定制
 
 不想装 Python 也能先试：**[免费在线工具](https://aizhang-ai.github.io/python-office-automation/tools/)**，
-表格清洗、CSV↔JSON、JSON 格式化、正则测试、文本差异对比、图片压缩，纯浏览器里跑，数据不上传服务器。
+表格清洗、CSV↔JSON、JSON 格式化、正则测试、文本差异对比、Markdown 转 HTML、图片压缩，纯浏览器里跑，数据不上传服务器。
 
 这几个工具是通用版本。如果你的场景不一样——不同的数据格式、不同的通知方式、不同的触发时机——可以按你的流程改。
 
