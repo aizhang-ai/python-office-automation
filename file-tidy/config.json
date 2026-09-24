@@ -1,0 +1,32 @@
+{
+  "input_dir": "input",
+  "output_dir": "output",
+  "recursive": true,
+  "mode": "copy",
+  "dry_run": false,
+  "on_conflict": "rename",
+  "categories": {
+    "图片": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".heic"],
+    "文档": [".pdf", ".doc", ".docx", ".txt", ".md", ".ppt", ".pptx"],
+    "表格": [".xls", ".xlsx", ".csv"],
+    "压缩包": [".zip", ".rar", ".7z", ".tar", ".gz"],
+    "视频": [".mp4", ".avi", ".mov", ".mkv", ".wmv"],
+    "音频": [".mp3", ".wav", ".m4a", ".flac"],
+    "其他": ["*"]
+  },
+  "rename": {
+    "enabled": true,
+    "template": "{category}_{date}_{index:03d}",
+    "date_source": "mtime",
+    "date_format": "%Y%m%d",
+    "lowercase_ext": true,
+    "keep_original_name": false
+  },
+  "dedupe": {
+    "enabled": true,
+    "action": "separate",
+    "folder": "_重复文件"
+  },
+  "exclude_names": [".git", "node_modules", "__pycache__", ".DS_Store", "Thumbs.db"],
+  "min_size_warn": 1024
+}
