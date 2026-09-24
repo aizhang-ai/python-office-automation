@@ -1,0 +1,39 @@
+文件自动整理归档 —— 运行报告
+运行时间：2026-09-24 19:49:38
+输入目录：C:\Users\张明一\.openclaw\workspace\ASSETS\products\cn-pack-01\file-tidy\input
+输出目录：C:\Users\张明一\.openclaw\workspace\ASSETS\products\cn-pack-01\file-tidy\output
+模式：copy
+
+扫描文件数：11
+归档文件数：9
+重复文件数：2
+空文件数：1
+
+按类别统计：
+  图片：3 个
+  文档：4 个
+  表格：1 个
+  压缩包：1 个
+  _重复文件：2 个
+
+重复文件（内容完全一致，原件未删除）：
+  报表\8月销售.xlsx  ==  报表\8月销售 - 副本.xlsx  (20 字节)
+  照片\DSC_0001_副本.jpg  ==  照片\DSC_0001.jpg  (15 字节)
+
+空文件（0 字节，已一并归档，建议人工确认是否该删）：
+  合同\扫描件_空白.pdf
+
+疑似废文件（小于 1024 字节）：
+  合同\合同-张三.docx（18 字节）
+  合同\扫描件.pdf（19 字节）
+  报表\8月销售 - 副本.xlsx（20 字节）
+  报表\8月销售.xlsx（20 字节）
+  杂项\backup 2026.zip（11 字节）
+  杂项\readme.txt（14 字节）
+  照片\DSC_0001.jpg（15 字节）
+  照片\DSC_0001_副本.jpg（15 字节）
+  照片\DSC_0002.jpg（15 字节）
+  照片\logo.PNG（12 字节）
+
+归档清单 CSV：output\_清单\file-index.csv
+重复清单 CSV：output\_清单\duplicates.csv
