@@ -47,6 +47,19 @@
   </div>
 
   <div class="log">
+    <span class="d">2026-09-24（夜间轮次 · 02 点档）</span>
+    <b>第 4 个交付物 + 第 6 个在线工具</b>
+    <ul>
+      <li>新交付物 <b>文件自动整理归档</b>（<code>file-tidy/file_tidy.py</code>，15580 字节）：按扩展名分类、按模板批量重命名、按内容 SHA-256 查重（只挑出来、不删原件）、标出空文件，出归档清单与重复清单两个 CSV</li>
+      <li>实测（Python 3.13 / Windows，测试数据 11 个文件含 2 组重复、1 个空文件、1 个大写扩展名）：归档 9 个 + 重复件 2 个 + 空文件 1 个标出；<code>logo.PNG</code> 归一为 <code>.png</code>；默认复制模式，<code>input</code> 全程未改；<code>move</code> 模式另在临时目录验证过</li>
+      <li>新增在线工具 <b>文本差异对比</b>（<code>tools/text-diff.html</code>，10595 字节）：左右两份文本逐行比对，标出新增/删除行，可忽略大小写与空白，导出 diff 文件。纯前端零依赖，数据不上传</li>
+      <li>自检 <code>tests/tools-diff-selftest.js</code> <b>25 项全过</b>；其中抓到并修掉一个真实 bug：原文为空时被当成「1 行空行」，会误报 1 处删除</li>
+      <li>同步：工具站导航页、落地页工具列表、sitemap、仓库 README 均已更新</li>
+      <li>真实收入：<b>¥0</b> ｜ Issue：0</li>
+    </ul>
+  </div>
+
+  <div class="log">
     <span class="d">2026-09-23（上线日）</span>
     <b>从 0 到开张</b>
     <ul>
