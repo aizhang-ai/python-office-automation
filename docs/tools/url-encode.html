@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>URL 编码解码在线工具 · 中文与特殊字符转义（免费，不上传）</title>
+<meta name="description" content="免费在线 URL 编码解码：中文与特殊字符转 %E4%B8%AD 形式、百分号编码还原、查询参数拆成键值对并可编辑后重新拼装、批量逐行转换。纯浏览器本地计算，数据不上传。">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  textarea{width:100%;min-height:120px;font-family:ui-monospace,Consolas,monospace;font-size:13px;
+    padding:10px;border:1px solid #e5e7eb;border-radius:8px;resize:vertical;box-sizing:border-box;line-height:1.6}
+  textarea:focus{outline:none;border-color:#2563eb}
+  .opts{display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;font-size:14px;color:#475569}
+  .stat{font-size:13px;color:#64748b;margin-top:6px}
+  .kv{display:grid;grid-template-columns:minmax(90px,26%) 1fr;gap:0;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-top:10px}
+  .kv>div{padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9;font-family:ui-monospace,Consolas,monospace;word-break:break-all}
+  .kv>div:nth-child(odd){background:#f8fafc;color:#475569;font-weight:600;font-family:inherit}
+  .kv>div:nth-last-child(1),.kv>div:nth-last-child(2){border-bottom:none}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="./index.html">在线工具箱</a>
+  <nav>
+    <a href="./csv-cleaner.html">表格清洗</a>
+    <a href="./csv-json.html">CSV↔JSON</a>
+    <a href="./json-formatter.html">JSON</a>
+    <a href="./regex-tester.html">正则</a>
+    <a href="./text-diff.html">文本对比</a>
+    <a href="./markdown-html.html">MD转HTML</a>
+    <a href="./timestamp.html">时间戳</a>
+    <a href="./base64.html">Base64</a>
+    <a href="./url-encode.html">URL编码</a>
+    <a href="./image-compress.html">图片压缩</a>
+    <a href="../buy.html">直接买</a>
+    <a href="../index.html">定制服务</a>
+  </nav>
+</header>
+
+<main>
+  <h1>URL 编码 / 解码</h1>
+  <p class="lead">中文和特殊字符转成 <code>%E4%B8%AD</code> 这种能在地址栏里安全传输的形式，也能还原回来。
+  顺手把 <code>?a=1&amp;b=2</code> 拆成能改的键值对，改完再拼回去。<span class="pill">不上传</span></p>
+
+  <div class="card">
+    <h2 style="margin-top:0">① 文本 ↔ URL 编码</h2>
+    <textarea id="uIn" placeholder="要编码：搜索词=张三&城市=北京&#10;要解码：%E6%90%9C%E7%B4%A2%E8%AF%8D%3D%E5%BC%A0%E4%B8%89"></textarea>
+    <div class="opts">
+      <label><input type="checkbox" id="optPlus"> 空格转成 <code>+</code>（表单提交格式，而非 %20）</label>
+      <label><input type="checkbox" id="optKeep"> 编码时保留 <code>/ : ? &amp; = #</code>（编码整个网址时用）</label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 120px"><button onclick="runEnc()">编码</button></div>
+      <div style="flex:0 0 120px"><button onclick="runDec()">解码</button></div>
+      <div style="flex:0 0 130px"><button class="ghost" onclick="copyOut('uOut')">复制结果</button></div>
+      <div style="flex:0 0 130px"><button class="ghost" onclick="swap()">结果填回上面</button></div>
+      <div style="flex:0 0 110px"><button class="ghost" onclick="clearEnc()">清空</button></div>
+    </div>
+    <p class="msg" id="msgEnc"></p>
+    <textarea id="uOut" placeholder="结果会显示在这里" style="margin-top:6px"></textarea>
+    <p class="stat" id="statEnc"></p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">② 查询参数 ↔ 键值对</h2>
+    <p style="font-size:14px;color:#475569;margin:0 0 8px">
+      粘贴一整条网址或一段 <code>a=1&amp;b=2</code>，点「拆开」把它拆成一行一个参数；
+      改完之后点「拼回去」重新组装。重复的参数名会原样保留，不会丢。
+    </p>
+    <textarea id="qIn" placeholder="https://example.com/search?q=%E5%BC%A0%E4%B8%89&page=2&city=%E5%8C%97%E4%BA%AC"></textarea>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 120px"><button onclick="runSplit()">拆开</button></div>
+      <div style="flex:0 0 120px"><button onclick="runJoin()">拼回去</button></div>
+      <div style="flex:0 0 130px"><button class="ghost" onclick="copyOut('qPairs')">复制参数</button></div>
+      <div style="flex:0 0 110px"><button class="ghost" onclick="clearQ()">清空</button></div>
+    </div>
+    <p class="msg" id="msgQ"></p>
+    <div class="kv" id="qInfo" style="display:none"></div>
+    <label style="margin-top:12px;display:block">参数（一行一个，格式 <code>名=值</code>，可以随便改）</label>
+    <textarea id="qPairs" placeholder="q=张三&#10;page=2&#10;city=北京" style="min-height:110px"></textarea>
+    <label style="margin-top:10px;display:block">拼回去的结果</label>
+    <textarea id="qOut" placeholder="组装后的网址或查询串会显示在这里" style="min-height:70px"></textarea>
+    <p class="stat" id="statQ"></p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">③ 批量（一行一个）</h2>
+    <p style="font-size:14px;color:#475569;margin:0 0 8px">
+      有很多条要转的时候用这个，一行一条，一次全转完。
+    </p>
+    <textarea id="bIn" placeholder="张三&#10;北京 朝阳&#10;a/b?c=1"></textarea>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 140px"><button onclick="runBatch(1)">批量编码</button></div>
+      <div style="flex:0 0 140px"><button onclick="runBatch(0)">批量解码</button></div>
+      <div style="flex:0 0 130px"><button class="ghost" onclick="copyOut('bOut')">复制结果</button></div>
+    </div>
+    <p class="msg" id="msgB"></p>
+    <textarea id="bOut" placeholder="批量结果，与输入一一对应" style="margin-top:6px"></textarea>
+    <p class="stat" id="statB"></p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">几个常踩的坑</h2>
+    <ul style="line-height:1.9;font-size:14px;color:#475569">
+      <li><b>编码整个网址，还是只编码参数值</b>：这是最常搞混的一点。
+        编码<b>参数值</b>时，<code>/</code> <code>:</code> <code>?</code> <code>&amp;</code> <code>=</code> 都要转义，否则会破坏网址结构；
+        编码<b>整条网址</b>时则必须保留它们。本工具用「保留 / : ? &amp; = #」这个开关区分。</li>
+      <li><b>空格：%20 还是 +</b>：网址里标准写法是 <code>%20</code>；
+        但 HTML 表单提交（<code>application/x-www-form-urlencoded</code>）会写成 <code>+</code>。
+        发给后端接口前先确认它按哪种解析，两边不一致就会解出加号。</li>
+      <li><b>编两次会解不回来</b>：<code>张三</code> 编一次是 <code>%E5%BC%A0%E4%B8%89</code>，
+        再编一次 <code>%</code> 本身会变成 <code>%25</code>。如果你发现解出来的还是一串百分号，就是被编了两次。</li>
+      <li><b>报错「URI malformed」</b>：说明这串百分号编码不完整（比如只截到了 <code>%E5</code> 半个字），
+        或者里面混了没转义的 <code>%</code>。先确认原文有没有被截断。</li>
+      <li><b>URL 编码不是加密</b>：它只是转义，任何人都能还原。不要用它"保护"手机号、身份证号这类信息。</li>
+    </ul>
+  </div>
+
+  <div class="cta">
+    <b>要批量转换、要接进你的系统、要每天自动跑？</b><br>
+    网页版一次一份。定制版可以做：整个 Excel 一列网址批量拆参数、接口回调的签名参数校验与重排、
+    定时任务每天跑、结果推到企业微信/钉钉/飞书。<br>
+    邮箱 <b>A18926032483@outlook.com</b> · 或
+    <a href="https://github.com/aizhang-ai/python-office-automation/issues" target="_blank" rel="noopener">GitHub 开 Issue</a>
+  </div>
+</main>
+
+<footer>本工具在你的浏览器里运行，不上传任何数据</footer>
+
+<script>
+// ---------- 编解码 ----------
+// 编码「组件」（参数值）：/ : ? & = # 都要转义
+function encComp(s){
+  return encodeURIComponent(String(s == null ? '' : s));
+}
+
+// 编码「整条网址」：保留结构性字符
+function encKeep(s){
+  return encComp(s).replace(/%2F/gi, '/').replace(/%3A/gi, ':')
+                   .replace(/%3F/gi, '?').replace(/%26/gi, '&')
+                   .replace(/%3D/gi, '=').replace(/%23/gi, '#');
+}
+
+function encText(s, keepStruct, plusMode){
+  var t = keepStruct ? encKeep(s) : encComp(s);
+  return plusMode ? t.replace(/%20/g, '+') : t;
+}
+
+// 解码：能解就解，解不了返回 null（不抛异常）
+function decSafe(s){
+  try { return decodeURIComponent(String(s == null ? '' : s)); }
+  catch (e) { return null; }
+}
+
+// 表单格式解码：先把 + 还原成空格再解
+function decForm(s){
+  return decSafe(String(s == null ? '' : s).replace(/\+/g, ' '));
+}
+
+function decText(s, plusMode){
+  return plusMode ? decForm(s) : decSafe(s);
+}
+
+// ---------- 查询参数 ----------
+// 把 "?a=1&b=2" 或 "a=1&b=2" 拆成 [[k,v],...]，保留顺序与重复键
+function toPairs(qs){
+  var s = String(qs == null ? '' : qs);
+  var h = s.indexOf('#');
+  if (h >= 0) s = s.slice(0, h);
+  var q = s.indexOf('?');
+  if (q >= 0) {
+    s = s.slice(q + 1);
+  } else {
+    // 没有 ? 时，只有确实长成「名=值」样子才当作查询串；
+    // 否则像 https://a.com 这种整条网址会被误拆成一个参数
+    if (s.indexOf('=') < 0) return [];
+    if (s.indexOf('/') >= 0 || s.indexOf(':') >= 0) return [];
+  }
+  if (!s) return [];
+  var out = [], parts = s.split('&'), i, p, eq;
+  for (i = 0; i < parts.length; i++) {
+    p = parts[i];
+    if (p === '') continue;
+    eq = p.indexOf('=');
+    if (eq < 0) out.push([decSafe(p) === null ? p : decSafe(p), '']);
+    else out.push([safeDec(p.slice(0, eq)), safeDec(p.slice(eq + 1))]);
+  }
+  return out;
+}
+
+function safeDec(x){
+  var d = decSafe(x);
+  return d === null ? x : d;
+}
+
+// 拆出网址主体（? 之前的部分，含 ? 之前的一切）
+function baseOf(url){
+  var s = String(url == null ? '' : url);
+  var q = s.indexOf('?');
+  return q >= 0 ? s.slice(0, q) : s;
+}
+
+function hashOf(url){
+  var s = String(url == null ? '' : url);
+  var h = s.indexOf('#');
+  return h >= 0 ? s.slice(h) : '';
+}
+
+// [[k,v]] -> "a=1&b=2"（值按组件编码）
+function buildQuery(pairs, plusMode){
+  var out = [], i, k, v;
+  for (i = 0; i < pairs.length; i++) {
+    k = pairs[i][0]; v = pairs[i][1];
+    out.push(encText(k, false, plusMode) + '=' + encText(v, false, plusMode));
+  }
+  return out.join('&');
+}
+
+// 参数文本 <-> 数组。文本格式：一行一个 "名=值"
+function pairsToText(pairs){
+  return pairs.map(function (p){ return p[0] + '=' + p[1]; }).join('\n');
+}
+
+function textToPairs(text){
+  var lines = String(text == null ? '' : text).split(/\r?\n/), out = [], i, ln, eq;
+  for (i = 0; i < lines.length; i++) {
+    ln = lines[i];
+    if (ln.trim() === '') continue;
+    eq = ln.indexOf('=');
+    if (eq < 0) out.push([ln, '']);
+    else out.push([ln.slice(0, eq), ln.slice(eq + 1)]);
+  }
+  return out;
+}
+
+// ---------- 页面 ----------
+function $(id){ return document.getElementById(id); }
+
+function setMsg(id, kind, text){
+  var e = $(id);
+  if (!e) return;
+  e.className = 'msg ' + (kind || '');
+  e.textContent = text;
+}
+
+function cb(id){ var e = $(id); return !!(e && e.checked); }
+
+function copyText(t){
+  if (!t) return;
+  if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(String(t));
+  }
+}
+
+function copyOut(id){
+  var e = $(id);
+  if (!e || !e.value) return;
+  copyText(e.value);
+}
+
+function runEnc(){
+  var src = $('uIn').value;
+  if (!src) { setMsg('msgEnc', 'err', '先输入内容'); $('uOut').value = ''; $('statEnc').textContent = ''; return null; }
+  var out = encText(src, cb('optKeep'), cb('optPlus'));
+  $('uOut').value = out;
+  $('statEnc').textContent = '原文 ' + src.length + ' 个字符 → 编码后 ' + out.length + ' 个字符';
+  setMsg('msgEnc', 'ok', '编码完成' + (cb('optKeep') ? '（已保留网址结构字符）' : '（参数值模式）') +
+    (cb('optPlus') ? '，空格转成 +' : ''));
+  return out;
+}
+
+function runDec(){
+  var src = $('uIn').value;
+  if (!String(src).trim()) { setMsg('msgEnc', 'err', '先输入内容'); $('uOut').value = ''; $('statEnc').textContent = ''; return null; }
+  var out = decText(src, cb('optPlus'));
+  if (out === null) {
+    setMsg('msgEnc', 'err', '解不开：这串百分号编码不完整（可能只截到了半个字），或者里面混了没转义的 %');
+    $('uOut').value = ''; $('statEnc').textContent = '';
+    return null;
+  }
+  $('uOut').value = out;
+  $('statEnc').textContent = '还原出 ' + out.length + ' 个字符';
+  setMsg('msgEnc', 'ok', '解码完成');
+  return out;
+}
+
+function swap(){
+  if (!$('uOut').value) { setMsg('msgEnc', 'err', '还没有结果'); return; }
+  $('uIn').value = $('uOut').value;
+  $('uOut').value = '';
+  setMsg('msgEnc', '', '已填回上面');
+}
+
+function clearEnc(){ $('uIn').value = ''; $('uOut').value = ''; $('statEnc').textContent = ''; setMsg('msgEnc', '', ''); }
+
+function runSplit(){
+  var src = $('qIn').value;
+  if (!String(src).trim()) { setMsg('msgQ', 'err', '先粘贴一条网址或查询串'); return null; }
+  var pairs = toPairs(src);
+  if (!pairs.length) { setMsg('msgQ', 'err', '没找到参数。网址里要有 ? 或者直接的 a=1&b=2 形式'); $('qInfo').style.display = 'none'; return null; }
+  $('qPairs').value = pairsToText(pairs);
+  var info = [['网址主体', baseOf(src) || '（空）'],
+              ['参数个数', String(pairs.length)],
+              ['锚点 #', hashOf(src) || '（无）']];
+  $('qInfo').innerHTML = info.map(function (r){
+    return '<div>' + esc(r[0]) + '</div><div>' + esc(r[1]) + '</div>';
+  }).join('');
+  $('qInfo').style.display = 'grid';
+  $('statQ').textContent = '拆出 ' + pairs.length + ' 个参数，改完点「拼回去」';
+  setMsg('msgQ', 'ok', '拆好了');
+  return pairs;
+}
+
+function esc(s){
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function runJoin(){
+  var pairs = textToPairs($('qPairs').value);
+  if (!pairs.length) { setMsg('msgQ', 'err', '参数框是空的，先点「拆开」或者自己按 名=值 每行一个写'); return null; }
+  var q = buildQuery(pairs, cb('optPlus'));
+  var base = baseOf($('qIn').value);
+  var out = (base ? base + '?' : '') + q + hashOf($('qIn').value);
+  $('qOut').value = out;
+  $('statQ').textContent = '拼回 ' + pairs.length + ' 个参数，共 ' + out.length + ' 个字符';
+  setMsg('msgQ', 'ok', '拼好了');
+  return out;
+}
+
+function clearQ(){
+  $('qIn').value = ''; $('qPairs').value = ''; $('qOut').value = '';
+  $('statQ').textContent = ''; $('qInfo').style.display = 'none'; setMsg('msgQ', '', '');
+}
+
+function runBatch(isEncode){
+  var lines = String($('bIn').value).split(/\r?\n/);
+  var out = [], bad = 0, i, ln, r;
+  for (i = 0; i < lines.length; i++) {
+    ln = lines[i];
+    if (ln.trim() === '') { out.push(''); continue; }
+    if (isEncode) out.push(encText(ln, cb('optKeep'), cb('optPlus')));
+    else {
+      r = decText(ln, cb('optPlus'));
+      if (r === null) { bad++; out.push('（解不开：' + ln + '）'); }
+      else out.push(r);
+    }
+  }
+  $('bOut').value = out.join('\n');
+  var n = lines.filter(function (x){ return x.trim() !== ''; }).length;
+  $('statB').textContent = '处理 ' + n + ' 行' + (bad ? '，其中 ' + bad + ' 行解不开' : '');
+  setMsg('msgB', bad ? 'err' : 'ok', bad ? ('有 ' + bad + ' 行解不开，已原样标出') : '全部处理完成');
+  return out;
+}
+</script>
+<div style="text-align:center;color:#94a3b8;font-size:12px;margin:24px 0 8px">本站总访问 <span id="vercount_value_site_pv">-</span> 次 · 本页 <span id="vercount_value_page_pv">-</span> 次</div><script async src="https://vercount.one/js"></script>
+</body>
+</html>
