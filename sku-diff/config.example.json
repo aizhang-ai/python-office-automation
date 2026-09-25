@@ -1,0 +1,29 @@
+{
+  "baseline": "input/基准商品表.csv",
+  "compares": [
+    "input/店铺A.csv",
+    "input/店铺B.csv"
+  ],
+  "key_field": "sku",
+  "only_fields": [],
+  "ignore_fields": [
+    "更新时间",
+    "抓取时间",
+    "库存"
+  ],
+  "numeric_tolerance": 0.01,
+  "case_sensitive": false,
+  "output_dir": "output",
+  "max_detail": 30,
+  "report_formats": [
+    "txt",
+    "csv",
+    "md",
+    "group"
+  ],
+  "webhook": {
+    "enabled": false,
+    "type": "wecom",
+    "url": ""
+  }
+}
