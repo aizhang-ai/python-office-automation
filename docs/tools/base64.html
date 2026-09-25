@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Base64 编解码在线工具（免费，不上传）</title>
+<meta name="description" content="免费在线 Base64 编码与解码：中文 UTF-8 不乱码，支持 URL-safe 与去掉等号填充，文件/图片转 Base64 生成 data URI，也能把 Base64 还原成文件下载。纯浏览器本地计算，数据不上传。">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .b64wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:760px){.b64wrap{grid-template-columns:1fr}}
+  pre.raw{background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:8px;max-height:320px;overflow:auto;white-space:pre-wrap;word-break:break-all;font-size:12.5px;margin:6px 0 0}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="./index.html">在线工具箱</a>
+  <nav>
+    <a href="./csv-cleaner.html">表格清洗</a>
+    <a href="./csv-json.html">CSV↔JSON</a>
+    <a href="./json-formatter.html">JSON</a>
+    <a href="./regex-tester.html">正则</a>
+    <a href="./text-diff.html">文本对比</a>
+    <a href="./markdown-html.html">MD转HTML</a>
+    <a href="./timestamp.html">时间戳</a>
+    <a href="./base64.html">Base64</a>
+    <a href="./image-compress.html">图片压缩</a>
+    <a href="../buy.html">直接买</a>
+    <a href="../index.html">定制服务</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Base64 编码 / 解码</h1>
+  <p class="lead">中文不会乱码（走 UTF-8，不是老式的 <code>btoa</code>），支持 URL-safe、去掉等号填充、每行 76 字符换行；
+  图片和文件也能转成 Base64 与 data URI，反过来还能把一段 Base64 还原成文件下载。<span class="pill">不上传</span></p>
+
+  <div class="card">
+    <h2 style="margin-top:0">① 文本 → Base64</h2>
+    <label for="src">原文（中文、emoji 都行）</label>
+    <textarea id="src" placeholder="张明一的自动化小店&#10;Hello, 世界!"></textarea>
+    <div class="checks" style="margin-top:8px">
+      <label><input type="checkbox" id="urlsafe"> URL-safe（+ 换成 -，/ 换成 _）</label>
+      <label><input type="checkbox" id="nopad"> 去掉末尾的 = 填充</label>
+      <label><input type="checkbox" id="wrap"> 每 76 个字符换一行（邮件 MIME 格式）</label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 130px"><button onclick="runEncode()">编码</button></div>
+      <div style="flex:0 0 130px"><button class="ghost" onclick="copyEnc()">复制结果</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="clearEnc()">清空</button></div>
+    </div>
+    <p class="msg" id="msgEnc"></p>
+    <pre class="raw" id="outEnc">（点上面的「编码」）</pre>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">② Base64 → 文本</h2>
+    <label for="b64">Base64 串（带换行、带空格、少个等号都能忍）</label>
+    <textarea id="b64" placeholder="5byg5piO5LiA55qE6Ieq5Yqo5YyW5bCP5bqX"></textarea>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 130px"><button onclick="runDecode()">解码</button></div>
+      <div style="flex:0 0 150px"><button class="ghost" onclick="swapIn()">用上面的结果</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="clearDec()">清空</button></div>
+    </div>
+    <p class="msg" id="msgDec"></p>
+    <pre class="raw" id="outDec" style="background:#fff;color:#1f2937;border:1px solid #e5e7eb">（点上面的「解码」）</pre>
+    <div class="row" style="margin-top:8px">
+      <div style="flex:0 0 180px"><button class="ghost" onclick="saveAsFile()">还原成文件下载</button></div>
+      <div style="flex:1"><label style="margin:0">文件名<input id="fname" placeholder="decoded.bin" style="margin-top:4px"></label></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">③ 文件 / 图片 → Base64</h2>
+    <div class="row">
+      <div style="flex:0 0 160px"><button class="ghost" onclick="pickFile()">选择文件</button></div>
+      <div style="flex:1;color:#64748b;font-size:13px;align-self:center">
+        建议 5MB 以内。转成 data URI 可以直接贴进 CSS / HTML / JSON 里用。
+      </div>
+    </div>
+    <p class="msg" id="msgFile"></p>
+    <div class="b64wrap" style="margin-top:6px">
+      <div>
+        <label>纯 Base64</label>
+        <pre class="raw" id="outFileB64">（还没选文件）</pre>
+      </div>
+      <div>
+        <label>data URI（可直接用）</label>
+        <pre class="raw" id="outFileUri">（还没选文件）</pre>
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div style="flex:0 0 150px"><button class="ghost" onclick="copyUri()">复制 data URI</button></div>
+      <div style="flex:0 0 150px"><button class="ghost" onclick="copyFileB64()">复制 Base64</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">几个常踩的坑</h2>
+    <ul style="line-height:1.9;font-size:14px;color:#475569">
+      <li><b>中文乱码</b>：浏览器自带的 <code>btoa()</code> 只认单字节，中文会直接报错或变乱码。本工具先转成 UTF-8 字节再编码，所以中文、emoji 都没问题。</li>
+      <li><b>标准 vs URL-safe</b>：标准用 <code>+ /</code>，URL-safe 用 <code>- _</code>。放进 URL 或文件名里一定要用 URL-safe，否则 <code>+</code> 会被当成空格。</li>
+      <li><b>末尾的等号</b>：那是补齐用的填充符，不是数据。有些系统要求去掉，有些要求保留，按对方的要求勾。</li>
+      <li><b>长度会变长</b>：Base64 大约比原文长 1/3。一段 1MB 的图片会变成约 1.33MB 的文本。</li>
+      <li><b>它不是加密</b>：Base64 只是编码方式，任何人都能解回来。别拿它存密码或敏感信息。</li>
+    </ul>
+  </div>
+
+  <div class="cta">
+    <b>要批量转、要定时跑、要接进你的系统？</b><br>
+    网页版一次一个。定制版可以做：整个文件夹的图片批量转 data URI、按你的规则批量编码解码、
+    定时任务每天跑、把结果推到企业微信/钉钉/飞书。<br>
+    邮箱 <b>A18926032483@outlook.com</b> · 或
+    <a href="https://github.com/aizhang-ai/python-office-automation/issues" target="_blank" rel="noopener">GitHub 开 Issue</a>
+  </div>
+</main>
+
+<footer>本工具在你的浏览器里运行，不上传任何数据</footer>
+
+<script>
+var B64_STD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+var B64_URL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+function utf8Bytes(s){
+  if (typeof TextEncoder !== 'undefined') return new TextEncoder().encode(String(s));
+  // 兜底：手动 UTF-8 编码（走不到，除非环境很老）
+  var out = [];
+  for (var i = 0; i < String(s).length; i++){
+    var c = String(s).codePointAt(i);
+    if (c < 0x80) out.push(c);
+    else if (c < 0x800) out.push(0xC0 | (c >> 6), 0x80 | (c & 63));
+    else if (c < 0x10000) out.push(0xE0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+    else out.push(0xF0 | (c >> 18), 0x80 | ((c >> 12) & 63), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+  }
+  return new Uint8Array(out);
+}
+
+function utf8Text(bytes){
+  if (typeof TextDecoder !== 'undefined') {
+    try { return new TextDecoder('utf-8').decode(bytes); } catch (e) {}
+  }
+  var s = '', i = 0, n = bytes.length;
+  while (i < n){
+    var b = bytes[i++], cp;
+    if (b < 0x80) cp = b;
+    else if (b < 0xE0) cp = ((b & 31) << 6) | (bytes[i++] & 63);
+    else if (b < 0xF0) cp = ((b & 15) << 12) | ((bytes[i++] & 63) << 6) | (bytes[i++] & 63);
+    else cp = ((b & 7) << 18) | ((bytes[i++] & 63) << 12) | ((bytes[i++] & 63) << 6) | (bytes[i++] & 63);
+    s += String.fromCodePoint ? String.fromCodePoint(cp) : String.fromCharCode(cp);
+  }
+  return s;
+}
+
+// 字节数组 -> Base64。urlsafe: 用 -_ ；nopad: 去掉末尾 =
+function bytesToB64(bytes, urlsafe, nopad){
+  var tbl = urlsafe ? B64_URL : B64_STD;
+  var out = '', i, n = bytes.length;
+  for (i = 0; i + 2 < n; i += 3){
+    var v = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
+    out += tbl[(v >> 18) & 63] + tbl[(v >> 12) & 63] + tbl[(v >> 6) & 63] + tbl[v & 63];
+  }
+  var left = n - i;
+  if (left === 1){
+    var v1 = bytes[i] << 16;
+    out += tbl[(v1 >> 18) & 63] + tbl[(v1 >> 12) & 63];
+    if (!nopad) out += '==';
+  } else if (left === 2){
+    var v2 = (bytes[i] << 16) | (bytes[i + 1] << 8);
+    out += tbl[(v2 >> 18) & 63] + tbl[(v2 >> 12) & 63] + tbl[(v2 >> 6) & 63];
+    if (!nopad) out += '=';
+  }
+  return out;
+}
+
+function b64Val(ch){
+  if (ch >= 'A' && ch <= 'Z') return ch.charCodeAt(0) - 65;
+  if (ch >= 'a' && ch <= 'z') return ch.charCodeAt(0) - 71;
+  if (ch >= '0' && ch <= '9') return ch.charCodeAt(0) + 4;
+  if (ch === '+' || ch === '-') return 62;
+  if (ch === '/' || ch === '_') return 63;
+  return -1;
+}
+
+// 去掉空白与换行；把 -_ 还原成 +/；末尾 = 该补就补
+function normalizeB64(s){
+  var t = String(s == null ? '' : s).replace(/[\s\r\n]+/g, '');
+  t = t.replace(/-/g, '+').replace(/_/g, '/');
+  var m = t.length % 4;
+  if (m === 1) return null;              // 长度不可能是 4n+1
+  if (m === 2) t += '==';
+  else if (m === 3) t += '=';
+  return t;
+}
+
+// Base64 -> Uint8Array，非法输入返回 null
+function b64ToBytes(s){
+  var t = normalizeB64(s);
+  if (t === null) return null;
+  if (t === '') return new Uint8Array(0);
+  var body = t.replace(/=+$/, '');
+  for (var k = 0; k < body.length; k++){
+    if (b64Val(body.charAt(k)) < 0) return null;
+  }
+  var len = Math.floor(body.length * 6 / 8);
+  var out = new Uint8Array(len);
+  var acc = 0, bits = 0, p = 0;
+  for (var i = 0; i < body.length; i++){
+    acc = (acc << 6) | b64Val(body.charAt(i));
+    bits += 6;
+    if (bits >= 8){
+      bits -= 8;
+      out[p++] = (acc >> bits) & 0xFF;
+    }
+  }
+  return out;
+}
+
+function wrapLines(s, width){
+  width = width || 76;
+  var out = [], i = 0;
+  while (i < s.length){ out.push(s.substr(i, width)); i += width; }
+  return out.join('\n');
+}
+
+// 猜一下解码出来的是不是人能读的文本（用于提示「可能该下载成文件」）
+// 按「解码后的字符」判断，而不是按字节——按字节会把正常中文全算成非法字节
+function isLikelyText(bytes){
+  if (!bytes.length) return true;
+  var text;
+  try { text = utf8Text(bytes); } catch (e) { return false; }
+  if (!text) return false;
+  if (text.indexOf('\uFFFD') >= 0) return false;   // 出现替换字符 = 不是合法 UTF-8 文本
+  var good = 0;
+  for (var i = 0; i < text.length; i++){
+    var c = text.charCodeAt(i);
+    if (c === 9 || c === 10 || c === 13) good++;            // 制表符 / 换行
+    else if (c >= 32 && c < 127) good++;                    // 可打印 ASCII
+    else if (c > 127) good++;                               // 中文、日文、emoji 等
+    else good--;                                            // 控制字符
+  }
+  return good / text.length > 0.6;
+}
+
+function dataUri(mime, b64){
+  return 'data:' + (mime || 'application/octet-stream') + ';base64,' + b64;
+}
+
+function parseDataUri(s){
+  var m = String(s == null ? '' : s).match(/^data:([^;,]*)?;base64,([\s\S]*)$/i);
+  if (!m) return null;
+  return { mime: m[1] || 'application/octet-stream', b64: m[2] };
+}
+
+function extToMime(name){
+  var ext = String(name || '').toLowerCase().split('.').pop();
+  var map = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif',
+              webp: 'image/webp', svg: 'image/svg+xml', ico: 'image/x-icon',
+              pdf: 'application/pdf', txt: 'text/plain', csv: 'text/csv',
+              json: 'application/json', xml: 'application/xml', zip: 'application/zip',
+              mp3: 'audio/mpeg', mp4: 'video/mp4', woff2: 'font/woff2' };
+  return map[ext] || 'application/octet-stream';
+}
+
+// ---------- 页面动作 ----------
+function setMsg(id, kind, text){
+  var e = document.getElementById(id);
+  if (!e) return;
+  e.className = 'msg ' + (kind || '');
+  e.textContent = text;
+}
+
+function cb(id){ var e = document.getElementById(id); return !!(e && e.checked); }
+
+var lastEnc = '', lastBytes = null, lastFileB64 = '', lastUri = '';
+
+function runEncode(){
+  var src = document.getElementById('src').value;
+  if (!src) { setMsg('msgEnc', 'err', '左边是空的'); document.getElementById('outEnc').textContent = ''; return null; }
+  var b = utf8Bytes(src);
+  var s = bytesToB64(b, cb('urlsafe'), cb('nopad'));
+  if (cb('wrap')) s = wrapLines(s, 76);
+  lastEnc = s;
+  document.getElementById('outEnc').textContent = s;
+  setMsg('msgEnc', 'ok', '原文 ' + b.length + ' 字节 → Base64 ' +
+         s.replace(/\n/g, '').length + ' 字符（约 +' +
+         Math.round((s.replace(/\n/g, '').length / Math.max(b.length, 1) - 1) * 100) + '%）');
+  return s;
+}
+
+function runDecode(){
+  var s = document.getElementById('b64').value;
+  if (!String(s).trim()) { setMsg('msgDec', 'err', '上面是空的'); document.getElementById('outDec').textContent = ''; return null; }
+  var clean = normalizeB64(s);
+  if (clean === null) { setMsg('msgDec', 'err', '长度不对：Base64 的字符数去掉空白后不能是 4n+1'); document.getElementById('outDec').textContent = ''; return null; }
+  var bytes = b64ToBytes(s);
+  if (bytes === null) { setMsg('msgDec', 'err', '里面有不是 Base64 的字符（只认 A-Z a-z 0-9 + / - _ =）'); document.getElementById('outDec').textContent = ''; return null; }
+  lastBytes = bytes;
+  var text = utf8Text(bytes);
+  document.getElementById('outDec').textContent = text;
+  if (!isLikelyText(bytes)){
+    setMsg('msgDec', '', '解出来 ' + bytes.length + ' 字节，看着不像文本——大概率是图片或文件，填个文件名点「还原成文件下载」');
+  } else {
+    setMsg('msgDec', 'ok', '解出来 ' + bytes.length + ' 字节 / ' + text.length + ' 个字符');
+  }
+  if (!document.getElementById('fname').value) document.getElementById('fname').value = 'decoded.bin';
+  return text;
+}
+
+function swapIn(){
+  if (!lastEnc) { setMsg('msgDec', 'err', '先在上面编码一次'); return; }
+  document.getElementById('b64').value = lastEnc;
+  setMsg('msgDec', '', '已填入，点「解码」');
+}
+
+function clearEnc(){ document.getElementById('src').value = ''; document.getElementById('outEnc').textContent = '（点上面的「编码」）'; setMsg('msgEnc', '', ''); }
+function clearDec(){ document.getElementById('b64').value = ''; document.getElementById('outDec').textContent = '（点上面的「解码」）'; setMsg('msgDec', '', ''); }
+
+function copyText(t){
+  if (!t) return;
+  if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(String(t));
+  }
+}
+function copyEnc(){ if (!lastEnc) { setMsg('msgEnc', 'err', '还没有结果'); return; } copyText(lastEnc); setMsg('msgEnc', 'ok', '已复制'); }
+function copyUri(){ if (!lastUri) { setMsg('msgFile', 'err', '还没有结果'); return; } copyText(lastUri); setMsg('msgFile', 'ok', '已复制 data URI'); }
+function copyFileB64(){ if (!lastFileB64) { setMsg('msgFile', 'err', '还没有结果'); return; } copyText(lastFileB64); setMsg('msgFile', 'ok', '已复制 Base64'); }
+
+function pickFile(){
+  var inp = document.createElement('input');
+  inp.type = 'file';
+  inp.onchange = function (){
+    var f = inp.files && inp.files[0];
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024){
+      setMsg('msgFile', 'err', '文件 ' + Math.round(f.size / 1048576) + 'MB，太大了（上限 8MB），浏览器会卡');
+      return;
+    }
+    var fr = new FileReader();
+    fr.onload = function (){
+      var buf = fr.result;
+      var bytes = new Uint8Array(buf);
+      lastFileB64 = bytesToB64(bytes, false, false);
+      var mime = f.type || extToMime(f.name);
+      lastUri = dataUri(mime, lastFileB64);
+      document.getElementById('outFileB64').textContent = lastFileB64;
+      document.getElementById('outFileUri').textContent = lastUri;
+      setMsg('msgFile', 'ok', f.name + '（' + f.size + ' 字节，' + mime + '）→ Base64 ' + lastFileB64.length + ' 字符');
+    };
+    fr.readAsArrayBuffer(f);
+  };
+  inp.click();
+}
+
+function saveAsFile(){
+  if (!lastBytes) { setMsg('msgDec', 'err', '先解码一次再下载'); return; }
+  var name = document.getElementById('fname').value || 'decoded.bin';
+  var blob = new Blob([lastBytes], { type: extToMime(name) });
+  var el = document.createElement('a');
+  el.href = URL.createObjectURL(blob);
+  el.download = name;
+  document.body.appendChild(el); el.click();
+  setTimeout(function (){ URL.revokeObjectURL(el.href); el.remove(); }, 1000);
+  setMsg('msgDec', 'ok', '已下载 ' + name + '（' + lastBytes.length + ' 字节）');
+}
+</script>
+<div style="text-align:center;color:#94a3b8;font-size:12px;margin:24px 0 8px">本站总访问 <span id="vercount_value_site_pv">-</span> 次 · 本页 <span id="vercount_value_page_pv">-</span> 次</div><script async src="https://vercount.one/js"></script>
+</body>
+</html>
