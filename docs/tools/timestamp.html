@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>时间戳转换在线工具 · 日期时间换算（免费，不上传）</title>
+<meta name="description" content="免费在线时间戳转换：Unix 时间戳转日期、日期转时间戳，支持秒与毫秒自动识别、本地时区与 UTC 互转、ISO8601 输出、两个日期相差多少天。纯浏览器本地计算，数据不上传。">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .tsgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:760px){.tsgrid{grid-template-columns:1fr}}
+  .kv{border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-top:10px}
+  .kv div{display:flex;border-bottom:1px solid #f1f5f9;font-size:14px}
+  .kv div:last-child{border-bottom:none}
+  .kv b{flex:0 0 132px;background:#f8fafc;padding:9px 12px;color:#475569;font-weight:600}
+  .kv span{flex:1;padding:9px 12px;word-break:break-all;font-family:ui-monospace,Consolas,monospace}
+  .big{font-size:26px;font-weight:700;letter-spacing:.5px;font-family:ui-monospace,Consolas,monospace}
+  .mono{font-family:ui-monospace,Consolas,monospace}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="./index.html">在线工具箱</a>
+  <nav>
+    <a href="./csv-cleaner.html">表格清洗</a>
+    <a href="./csv-json.html">CSV↔JSON</a>
+    <a href="./json-formatter.html">JSON</a>
+    <a href="./regex-tester.html">正则</a>
+    <a href="./text-diff.html">文本对比</a>
+    <a href="./markdown-html.html">MD转HTML</a>
+    <a href="./timestamp.html">时间戳</a>
+    <a href="./image-compress.html">图片压缩</a>
+    <a href="../buy.html">直接买</a>
+    <a href="../index.html">定制服务</a>
+  </nav>
+</header>
+
+<main>
+  <h1>时间戳 / 日期时间换算</h1>
+  <p class="lead">Unix 时间戳转成年月日、年月日转成时间戳，秒和毫秒自动识别，本地时区和 UTC 都能看。
+  调接口、查日志、对账时最常碰到的那一下，这里一步搞定。<span class="pill">不上传</span></p>
+
+  <div class="card">
+    <label>此刻</label>
+    <div class="tsgrid" style="margin-top:6px">
+      <div>
+        <div class="big" id="nowSec">-</div>
+        <div style="color:#64748b;font-size:13px">秒级时间戳（10 位）</div>
+      </div>
+      <div>
+        <div class="big" id="nowMs">-</div>
+        <div style="color:#64748b;font-size:13px">毫秒级时间戳（13 位）</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 140px"><button class="ghost" onclick="copyNow('sec')">复制秒级</button></div>
+      <div style="flex:0 0 140px"><button class="ghost" onclick="copyNow('ms')">复制毫秒级</button></div>
+      <div style="flex:0 0 140px"><button class="ghost" onclick="useNow(1)">填到下面</button></div>
+    </div>
+    <p class="mono" id="nowText" style="color:#475569;font-size:13px;margin:8px 0 0">-</p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">① 时间戳 → 日期时间</h2>
+    <div class="row">
+      <div style="flex:2"><label>时间戳（可带负号，负数表示 1970 年以前）</label>
+        <input id="ts" placeholder="例如 1760000000 或 1760000000000"></div>
+      <div style="flex:0 0 150px"><label>单位</label>
+        <select id="tsUnit">
+          <option value="auto">自动识别</option>
+          <option value="s">秒（10 位）</option>
+          <option value="ms">毫秒（13 位）</option>
+        </select></div>
+      <div style="flex:0 0 170px"><label>按哪个时区显示</label>
+        <select id="tz1">
+          <option value="local">本机时区</option>
+          <option value="0">UTC+0</option>
+          <option value="480">UTC+8 北京时间</option>
+          <option value="-300">UTC-5</option>
+          <option value="540">UTC+9</option>
+        </select></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 130px"><button onclick="runTs()">转换</button></div>
+      <div style="flex:0 0 130px"><button class="ghost" onclick="useNow(1)">用此刻</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="clearTs()">清空</button></div>
+    </div>
+    <p class="msg" id="msgTs"></p>
+    <div class="kv" id="outTs"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">② 日期时间 → 时间戳</h2>
+    <div class="row">
+      <div style="flex:2"><label>日期时间</label>
+        <input id="dt" placeholder="2026-09-25 11:30:00  或  2026/09/25  或  2026-09-25"></div>
+      <div style="flex:0 0 170px"><label>这个时间是哪个时区的</label>
+        <select id="tz2">
+          <option value="local">本机时区</option>
+          <option value="0">UTC+0</option>
+          <option value="480">UTC+8 北京时间</option>
+          <option value="-300">UTC-5</option>
+          <option value="540">UTC+9</option>
+        </select></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 130px"><button onclick="runDate()">转换</button></div>
+      <div style="flex:0 0 130px"><button class="ghost" onclick="nowIntoDate()">用此刻</button></div>
+      <div style="flex:0 0 120px"><button class="ghost" onclick="clearDate()">清空</button></div>
+    </div>
+    <p class="msg" id="msgDt"></p>
+    <div class="kv" id="outDt"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">③ 两个时间相差多久</h2>
+    <div class="tsgrid">
+      <div><label>开始时间 / 时间戳</label><input id="d1" placeholder="2026-09-01 或 1760000000"></div>
+      <div><label>结束时间 / 时间戳</label><input id="d2" placeholder="2026-09-25 18:00:00"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:0 0 130px"><button onclick="runDiff()">算一下</button></div>
+      <div style="flex:0 0 130px"><button class="ghost" onclick="clearDiff()">清空</button></div>
+    </div>
+    <p class="msg" id="msgDiff"></p>
+    <div class="kv" id="outDiff"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">几个常踩的坑</h2>
+    <ul style="line-height:1.9;font-size:14px;color:#475569">
+      <li><b>10 位还是 13 位</b>：10 位是秒（后端 Java/PHP 常用），13 位是毫秒（前端 JS 常用）。位数搞错，日期会差到 1970 年或公元 5 万年。</li>
+      <li><b>时区</b>：同一个时间戳，UTC+8 和 UTC+0 显示的日期可能差一天。对账前先确认对方给的是哪个时区。</li>
+      <li><b>2038 问题</b>：32 位系统存秒级时间戳，到 2038-01-19 会溢出。</li>
+      <li><b>负数</b>：1970 年以前的时间戳是负数，本工具支持。</li>
+      <li><b>纯数字串会被当成时间戳</b>：在「相差多久」里输入 <code>20260901</code> 会被当作时间戳而不是 2026-09-01。想按日期算就写成 <code>2026-09-01</code>。</li>
+    </ul>
+  </div>
+
+  <div class="cta">
+    <b>要批量换算、要接进你的系统、要按你的时区规则出报表？</b><br>
+    网页版一次一个。定制版可以做：整个 CSV/Excel 一列时间戳批量转成日期、按你指定的时区与格式输出、
+    定时任务每天跑、把结果推到企业微信/钉钉/飞书。<br>
+    邮箱 <b>A18926032483@outlook.com</b> · 或
+    <a href="https://github.com/aizhang-ai/python-office-automation/issues" target="_blank" rel="noopener">GitHub 开 Issue</a>
+  </div>
+</main>
+
+<footer>本工具在你的浏览器里运行，不上传任何数据</footer>
+
+<script>
+function pad(n, w){
+  n = String(Math.abs(Number(n) || 0));
+  w = w || 2;
+  while (n.length < w) n = '0' + n;
+  return n;
+}
+
+function localOffsetMin(ms){
+  return -new Date(ms).getTimezoneOffset();
+}
+
+function offsetFromSelect(v){
+  return v === 'local' ? localOffsetMin(Date.now()) : Number(v);
+}
+
+// 把毫秒时间戳按指定偏移（分钟，东为正）格式化
+function fmt(ms, offsetMin){
+  var d = new Date(Number(ms) + Number(offsetMin) * 60000);
+  return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) +
+         ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds());
+}
+
+function fmtUtc(ms){ return fmt(ms, 0); }
+function fmtLocal(ms){ return fmt(ms, localOffsetMin(ms)); }
+
+function fmtIso(ms, offsetMin){
+  var sign = offsetMin >= 0 ? '+' : '-';
+  var a = Math.abs(offsetMin);
+  var t = fmt(ms, offsetMin);
+  return t.replace(' ', 'T') + sign + pad(Math.floor(a / 60)) + ':' + pad(a % 60);
+}
+
+function isoUtc(ms){
+  var d = new Date(Number(ms));
+  return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) + 'T' +
+         pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + '.' +
+         pad(d.getUTCMilliseconds(), 3) + 'Z';
+}
+
+var WEEK = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+
+function weekdayOf(ms, offsetMin){
+  var d = new Date(Number(ms) + Number(offsetMin) * 60000);
+  return WEEK[d.getUTCDay()];
+}
+
+// 解析时间戳：返回 {ms, unit}，失败返回 null
+function parseTsInput(s, unit){
+  var t = String(s == null ? '' : s).trim().replace(/[,_\s]/g, '');
+  if (!t) return null;
+  var neg = false;
+  if (t.charAt(0) === '-') { neg = true; t = t.slice(1); }
+  else if (t.charAt(0) === '+') { t = t.slice(1); }
+  if (!/^\d+$/.test(t)) return null;
+  var n = Number(t);
+  if (neg) n = -n;
+  var u = unit;
+  if (!u || u === 'auto') u = t.length <= 12 ? 's' : 'ms';
+  return { ms: u === 'ms' ? n : n * 1000, unit: u, raw: n };
+}
+
+// 解析日期时间：返回毫秒时间戳，失败返回 null。offsetMin 表示「输入的时间属于哪个时区」
+function parseDateInput(s, offsetMin){
+  var t = String(s == null ? '' : s).trim();
+  if (!t) return null;
+  if (offsetMin === undefined || offsetMin === null || offsetMin === 'local') {
+    offsetMin = localOffsetMin(Date.now());
+  }
+  var m = t.match(/^(-?\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
+  if (!m) return null;
+  var y = Number(m[1]), mo = Number(m[2]), da = Number(m[3]);
+  var h = Number(m[4] || 0), mi = Number(m[5] || 0), se = Number(m[6] || 0);
+  if (mo < 1 || mo > 12 || da < 1 || da > 31) return null;
+  if (h > 23 || mi > 59 || se > 59) return null;
+  var base = Date.UTC(y, mo - 1, da, h, mi, se, 0);
+  if (isNaN(base)) return null;
+  // 校验是否真实存在（例如 2026-02-30 会被 Date.UTC 顺延，这里要挡掉）
+  var chk = new Date(base);
+  if (chk.getUTCFullYear() !== y || chk.getUTCMonth() !== mo - 1 || chk.getUTCDate() !== da) return null;
+  return base - Number(offsetMin) * 60000;
+}
+
+// 既能吃时间戳也能吃日期
+function parseAny(s, offsetMin){
+  var a = String(s == null ? '' : s).trim();
+  if (!a) return null;
+  var ts = parseTsInput(a, 'auto');
+  if (ts && /^-?\d+$/.test(a.replace(/[,_\s]/g, ''))) return ts.ms;
+  var d = parseDateInput(a, offsetMin);
+  if (d !== null) return d;
+  return null;
+}
+
+function humanAgo(ms, nowMs){
+  var diff = Number(ms) - Number(nowMs);
+  var abs = Math.abs(diff);
+  var s = Math.floor(abs / 1000);
+  var parts = [];
+  var mins = Math.floor(s / 60), hrs = Math.floor(mins / 60), days = Math.floor(hrs / 24);
+  if (days) parts.push(days + ' 天');
+  if (hrs % 24) parts.push((hrs % 24) + ' 小时');
+  if (!days && mins % 60) parts.push((mins % 60) + ' 分钟');
+  if (!days && !hrs && s % 60) parts.push((s % 60) + ' 秒');
+  if (!parts.length) return '此刻';
+  var text = parts.join(' ');
+  return diff >= 0 ? text + '后' : text + '前';
+}
+
+function diffBetween(a, b){
+  var ms = Number(b) - Number(a);
+  var abs = Math.abs(ms);
+  var sec = Math.floor(abs / 1000);
+  return {
+    ms: ms,
+    sign: ms < 0 ? -1 : 1,
+    days: Math.floor(sec / 86400),
+    hours: Math.floor(sec / 3600),
+    minutes: Math.floor(sec / 60),
+    seconds: sec,
+    text: (function (){
+      var d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600),
+          m = Math.floor(sec % 3600 / 60), s = sec % 60, out = [];
+      if (d) out.push(d + ' 天');
+      if (h) out.push(h + ' 小时');
+      if (m) out.push(m + ' 分钟');
+      if (s || !out.length) out.push(s + ' 秒');
+      return out.join(' ');
+    })()
+  };
+}
+
+function rows(items){
+  return items.map(function (kv){
+    return '<div><b>' + kv[0] + '</b><span>' + String(kv[1]) + '</span></div>';
+  }).join('');
+}
+
+function offsetLabel(off){
+  var sign = off >= 0 ? '+' : '-';
+  var a = Math.abs(off);
+  return 'UTC' + sign + Math.floor(a / 60) + (a % 60 ? ':' + pad(a % 60) : '');
+}
+
+// ---------- 页面动作 ----------
+function setMsg(id, kind, text){
+  var e = document.getElementById(id);
+  if (!e) return;
+  e.className = 'msg ' + (kind || '');
+  e.textContent = text;
+}
+
+var lastTs = null, lastDt = null, lastDiff = null;
+
+function runTs(){
+  var p = parseTsInput(document.getElementById('ts').value, document.getElementById('tsUnit').value);
+  if (!p) { setMsg('msgTs', 'err', '填一个整数时间戳，例如 1760000000 或 1760000000000'); document.getElementById('outTs').innerHTML = ''; return null; }
+  var off = offsetFromSelect(document.getElementById('tz1').value);
+  var n = Date.now();
+  lastTs = {
+    ts: p.ms,
+    unit: p.unit,
+    items: [
+      ['按 ' + offsetLabel(off), fmt(p.ms, off)],
+      ['UTC+0', fmtUtc(p.ms)],
+      ['本机时区', fmtLocal(p.ms)],
+      ['ISO 8601（该时区）', fmtIso(p.ms, off)],
+      ['ISO 8601（UTC）', isoUtc(p.ms)],
+      ['星期', weekdayOf(p.ms, off)],
+      ['秒级时间戳', Math.floor(p.ms / 1000)],
+      ['毫秒级时间戳', p.ms],
+      ['距今', humanAgo(p.ms, n)]
+    ]
+  };
+  document.getElementById('outTs').innerHTML = rows(lastTs.items);
+  setMsg('msgTs', 'ok', '识别为' + (p.unit === 's' ? '秒级' : '毫秒级') + '时间戳，共 ' + String(Math.abs(p.raw)).length + ' 位数字');
+  return lastTs;
+}
+
+function runDate(){
+  var off = offsetFromSelect(document.getElementById('tz2').value);
+  var ms = parseDateInput(document.getElementById('dt').value, off);
+  if (ms === null) { setMsg('msgDt', 'err', '认不出来。写成 2026-09-25 11:30:00 / 2026/09/25 / 2026-09-25 都行'); document.getElementById('outDt').innerHTML = ''; return null; }
+  lastDt = {
+    ms: ms,
+    items: [
+      ['秒级时间戳（10 位）', Math.floor(ms / 1000)],
+      ['毫秒级时间戳（13 位）', ms],
+      ['UTC+0 显示', fmtUtc(ms)],
+      ['本机时区显示', fmtLocal(ms)],
+      ['ISO 8601（UTC）', isoUtc(ms)],
+      ['星期', weekdayOf(ms, off)]
+    ]
+  };
+  document.getElementById('outDt').innerHTML = rows(lastDt.items);
+  setMsg('msgDt', 'ok', '按 ' + offsetLabel(off) + ' 解析成功');
+  return lastDt;
+}
+
+function runDiff(){
+  var off = offsetFromSelect(document.getElementById('tz2').value);
+  var a = parseAny(document.getElementById('d1').value, off);
+  var b = parseAny(document.getElementById('d2').value, off);
+  if (a === null || b === null) { setMsg('msgDiff', 'err', '两边都要填，可以是日期也可以是时间戳'); document.getElementById('outDiff').innerHTML = ''; return null; }
+  var d = diffBetween(a, b);
+  lastDiff = {
+    a: a, b: b, d: d,
+    items: [
+      ['起点', fmtLocal(a) + '  (' + a + ')'],
+      ['终点', fmtLocal(b) + '  (' + b + ')'],
+      ['相差', (d.sign < 0 ? '-' : '') + d.text],
+      ['折合天数', (d.sign < 0 ? '-' : '') + d.days + ' 天'],
+      ['折合小时', (d.sign < 0 ? '-' : '') + d.hours + ' 小时'],
+      ['折合分钟', (d.sign < 0 ? '-' : '') + d.minutes + ' 分钟'],
+      ['折合秒', (d.sign < 0 ? '-' : '') + d.seconds + ' 秒']
+    ]
+  };
+  document.getElementById('outDiff').innerHTML = rows(lastDiff.items);
+  setMsg('msgDiff', 'ok', d.sign < 0 ? '终点早于起点，结果记为负数' : '算好了');
+  return lastDiff;
+}
+
+function useNow(secMode){
+  var n = Date.now();
+  document.getElementById('ts').value = String(secMode ? Math.floor(n / 1000) : n);
+  setMsg('msgTs', '', '已填入此刻，点「转换」');
+}
+
+function nowIntoDate(){
+  var n = Date.now();
+  var off = offsetFromSelect(document.getElementById('tz2').value);
+  document.getElementById('dt').value = fmt(n, off);
+  setMsg('msgDt', '', '已填入此刻，点「转换」');
+}
+
+function clearTs(){ document.getElementById('ts').value = ''; document.getElementById('outTs').innerHTML = ''; setMsg('msgTs', '', ''); }
+function clearDate(){ document.getElementById('dt').value = ''; document.getElementById('outDt').innerHTML = ''; setMsg('msgDt', '', ''); }
+function clearDiff(){ document.getElementById('d1').value = ''; document.getElementById('d2').value = ''; document.getElementById('outDiff').innerHTML = ''; setMsg('msgDiff', '', ''); }
+
+function copyText(text, okMsg){
+  if (!text) return;
+  if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(String(text));
+  }
+}
+
+function copyNow(kind){
+  var n = Date.now();
+  var v = kind === 'ms' ? String(n) : String(Math.floor(n / 1000));
+  copyText(v);
+  var e = document.getElementById('msgTs');
+  if (e) { e.className = 'msg ok'; e.textContent = '已复制：' + v; }
+}
+
+function tick(){
+  var n = Date.now();
+  var s = document.getElementById('nowSec'), m = document.getElementById('nowMs'), t = document.getElementById('nowText');
+  if (s) s.textContent = String(Math.floor(n / 1000));
+  if (m) m.textContent = String(n);
+  if (t) t.textContent = fmtLocal(n) + '（本机） · ' + fmtUtc(n) + '（UTC） · ' + isoUtc(n);
+}
+
+try { tick(); setInterval(tick, 1000); } catch (e) {}
+</script>
+<div style="text-align:center;color:#94a3b8;font-size:12px;margin:24px 0 8px">本站总访问 <span id="vercount_value_site_pv">-</span> 次 · 本页 <span id="vercount_value_page_pv">-</span> 次</div><script async src="https://vercount.one/js"></script>
+</body>
+</html>
