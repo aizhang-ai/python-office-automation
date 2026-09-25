@@ -1,4 +1,4 @@
-# 五个能直接跑的自动化小工具
+# 六个能直接跑的自动化小工具
 
 都是**纯 Python 标准库**，不需要 `pip install` 任何东西，不需要服务器，不需要注册任何平台。
 装了 Python 3.8 以上（[免费下载](https://www.python.org/downloads/)），双击 `run.bat` 就能用。
@@ -10,6 +10,7 @@
 | [`form-router/`](form-router/) | 订单 / 表单进来自动校验、去重、按规则分派负责人，异常单独挑出来 | 电商、教育、本地商家 |
 | [`file-tidy/`](file-tidy/) | 乱文件夹一键整理：按扩展名分类、按模板批量重命名、按内容查重（不删原件） | 设计、法务、行政、摄影 |
 | [`daily-brief/`](daily-brief/) | 读本地 CSV 出每日经营简报：销售额 / 单数 / 客单价与环比、按维度拆分、TOP 榜、阈值告警，输出能直接粘进群的日报 | 老板、店长、运营负责人 |
+| [`uptime-monitor/`](uptime-monitor/) | 网站 / 接口挂了第一时间知道：定时探测状态码与耗时、可校验页面关键词、失败重试、连续失败到阈值才告警、恢复再报一次，告警推到企业微信/钉钉/飞书群机器人 | 有官网、有对外接口的团队 |
 
 ---
 
@@ -42,6 +43,11 @@ cd daily-brief
 python tests/make_testdata.py   # 先造 5 天演示数据
 python daily_brief.py --dry-run  # 只打印，不写文件
 
+# 可用性监控
+cd uptime-monitor
+python uptime_monitor.py            # 跑一轮
+python uptime_monitor.py --loop     # 常驻盯着
+
 Windows 用户直接双击目录里的 `run.bat` 就行。详细说明见各目录下的 `README.md`。
 
 ---
@@ -56,7 +62,7 @@ Windows 用户直接双击目录里的 `run.bat` 就行。详细说明见各目�
 ## 关于定制
 
 不想装 Python 也能先试：**[免费在线工具](https://aizhang-ai.github.io/python-office-automation/tools/)**，
-表格清洗、CSV↔JSON、JSON 格式化、正则测试、文本差异对比、Markdown 转 HTML、图片压缩，纯浏览器里跑，数据不上传服务器。
+表格清洗、CSV↔JSON、JSON 格式化、正则测试、文本差异对比、Markdown 转 HTML、时间戳/日期换算、图片压缩，共 8 个，纯浏览器里跑，数据不上传服务器。
 
 这几个工具是通用版本。如果你的场景不一样——不同的数据格式、不同的通知方式、不同的触发时机——可以按你的流程改。
 
