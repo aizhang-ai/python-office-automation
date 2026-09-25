@@ -63,7 +63,7 @@ Windows 用户直接双击目录里的 `run.bat` 就行。详细说明见各目�
 ## 关于定制
 
 不想装 Python 也能先试：**[免费在线工具](https://aizhang-ai.github.io/python-office-automation/tools/)**，
-表格清洗、CSV↔JSON、JSON 格式化、正则测试、文本差异对比、Markdown 转 HTML、时间戳/日期换算、Base64 编解码、图片压缩，共 9 个，纯浏览器里跑，数据不上传服务器。
+表格清洗、CSV↔JSON、JSON 格式化、正则测试、文本差异对比、Markdown 转 HTML、时间戳/日期换算、Base64 编解码、URL 编码解码、图片压缩，共 10 个，纯浏览器里跑，数据不上传服务器。
 
 这几个工具是通用版本。如果你的场景不一样——不同的数据格式、不同的通知方式、不同的触发时机——可以按你的流程改。
 
