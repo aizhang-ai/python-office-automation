@@ -7,3 +7,6 @@ table-toolkit/run-report.txt
 daily-brief/output/
 daily-brief/input/*.csv
 file-tidy/output/
+
+uptime-monitor/output/
+test-config.json
