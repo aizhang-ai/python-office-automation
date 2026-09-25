@@ -1,0 +1,41 @@
+{
+  "mode": "baseline",
+  "key": "sku",
+  "compare_fields": ["price", "stock", "title", "status"],
+  "numeric_fields": ["price", "stock"],
+  "tolerance": 0.01,
+  "trim": true,
+  "ignore_case": false,
+  "top_n": 10,
+  "max_alert_diff": 1,
+  "column_alias": {
+    "商品编码": "sku",
+    "商品编号": "sku",
+    "SKU码": "sku",
+    "售价": "price",
+    "价格": "price",
+    "销售价": "price",
+    "库存": "stock",
+    "库存量": "stock",
+    "商品名称": "title",
+    "标题": "title",
+    "上下架": "status",
+    "状态": "status"
+  },
+  "alert": {
+    "enabled": false,
+    "type": "none",
+    "webhook": "",
+    "note": "type 可填 wecom / dingtalk / feishu，webhook 填群机器人的官方 Webhook 地址；enabled 改成 true 才会推送"
+  },
+  "stores": [
+    {
+      "name": "总店",
+      "file": "input/store_a.csv"
+    },
+    {
+      "name": "京东店",
+      "file": "input/store_b.csv"
+    }
+  ]
+}
