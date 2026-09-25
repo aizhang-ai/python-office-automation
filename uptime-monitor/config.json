@@ -1,0 +1,37 @@
+{
+  "interval_seconds": 300,
+  "timeout_seconds": 10,
+  "retry": 2,
+  "retry_wait_seconds": 5,
+  "fail_threshold": 2,
+  "slow_ms": 3000,
+  "verify_ssl": true,
+  "alert": {
+    "enabled": false,
+    "type": "none",
+    "webhook": "",
+    "note": "type 可填 wecom / dingtalk / feishu，webhook 填群机器人的官方 Webhook 地址；enabled 改成 true 才会推送"
+  },
+  "targets": [
+    {
+      "name": "示例-公司官网首页",
+      "url": "https://example.com",
+      "method": "GET",
+      "expect_status": 200,
+      "expect_keyword": "Example Domain"
+    },
+    {
+      "name": "示例-百度首页",
+      "url": "https://www.baidu.com",
+      "method": "GET",
+      "expect_status": 200
+    },
+    {
+      "name": "示例-一定失败的地址（演示告警长什么样）",
+      "url": "https://this-domain-does-not-exist-zzz.example",
+      "method": "GET",
+      "expect_status": 200,
+      "retry": 0
+    }
+  ]
+}
